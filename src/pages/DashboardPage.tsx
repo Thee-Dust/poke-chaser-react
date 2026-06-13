@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import type { Set } from '../api/types'
 import { SetGrid } from '../components/sets/SetGrid'
+import { Pagination } from '../components/ui/Pagination'
 import { useData } from '../providers/DataProviderContext'
 
 export function DashboardPage() {
@@ -19,10 +20,9 @@ export function DashboardPage() {
       setError(null)
 
       try {
-        const result = await data.getSets()
+        const result = await data.getSets(page)
         if (!cancelled) {
           setSets(result.sets)
-          setPage(result.page)
           setPages(result.pages)
         }
       } catch {
@@ -41,20 +41,14 @@ export function DashboardPage() {
     return () => {
       cancelled = true
     }
-  }, [data])
+  }, [data, page])
 
   return (
     <div className="page">
       <h1>Browse Sets</h1>
       {error && <p className="page__error">{error}</p>}
       <SetGrid sets={sets} loading={loading} />
-      {pages > 1 && (
-        <div className="pagination">
-          <button disabled={page <= 1} onClick={() => setPage(page - 1)}>Previous</button>
-          <span>Page {page} of {pages}</span>
-          <button disabled={page >= pages} onClick={() => setPage(page + 1)}>Next</button>
-        </div>
-      )}
+      <Pagination page={page} pages={pages} onPageChange={setPage} />
     </div>
   )
 }
