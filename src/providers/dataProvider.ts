@@ -6,9 +6,15 @@ function isMockMode(): boolean {
   return !import.meta.env.VITE_API_BASE_URL
 }
 
-async function getSets(page = 1) {
-  const { json } = await fetchJson<any>(getUrl(`cards/cardSet/?page=${page}`))
-  console.log(json)
+async function getSets(page = 1, sort = 'release_date_desc') {
+  const params = new URLSearchParams()
+  params.set('page', String(page))
+  params.set('sort', sort)
+
+  const { json } = await fetchJson<any>(
+    getUrl(`cards/cardSet/?${params.toString()}`),
+  )
+
   return {
     sets: json.results ?? [],
     page: json.meta?.pagination?.page ?? page,
