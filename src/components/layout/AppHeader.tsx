@@ -9,7 +9,7 @@ type AppHeaderProps = {
 }
 
 export function AppHeader({ searchQuery = '', onSearchSubmit }: AppHeaderProps) {
-  const { user, logout, openAuthModal } = useAuth()
+  const { user, loading, logout, openAuthModal } = useAuth()
   const [menuOpen, setMenuOpen] = useState(false)
   const menuRef = useRef<HTMLDivElement>(null)
 
@@ -57,7 +57,7 @@ export function AppHeader({ searchQuery = '', onSearchSubmit }: AppHeaderProps) 
       </form>
 
       <nav className="app-header__auth" aria-label="Account">
-        {user ? (
+        {loading ? null : user ? (
           <div className="app-header__user-menu" ref={menuRef}>
             <button
               type="button"
