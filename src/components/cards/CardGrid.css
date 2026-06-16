@@ -50,6 +50,9 @@
 .card-tile__body {
   padding: 12px;
   text-align: left;
+  display: flex;
+  flex-direction: column;
+  flex: 1;
 }
 
 .card-tile__name {
@@ -69,6 +72,14 @@
   font-size: 12px;
   color: var(--text);
   margin: 0;
+}
+
+.card-tile__price {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--accent);
+  margin-top: auto;
+  padding-top: 6px;
 }
 
 .card-tile--skeleton {
