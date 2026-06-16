@@ -2,15 +2,30 @@ import { useEffect, useState } from 'react'
 import { Link, useSearchParams } from 'react-router-dom'
 import type { Card } from '../api/types'
 import { CardGrid } from '../components/cards/CardGrid'
+import { Pagination } from '../components/ui/Pagination'
 import { useData } from '../providers/DataProviderContext'
+
+const CARD_SORT_OPTIONS = [
+  { value: 'price_desc', label: 'Price: High to Low' },
+  { value: 'price_asc', label: 'Price: Low to High' },
+  { value: 'name_asc', label: 'A–Z' },
+  { value: 'name_desc', label: 'Z–A' },
+] as const
 
 export function SearchPage() {
   const data = useData()
   const [searchParams] = useSearchParams()
   const query = searchParams.get('q') ?? ''
   const [cards, setCards] = useState<Card[]>([])
+  const [page, setPage] = useState(1)
+  const [pages, setPages] = useState(1)
+  const [sort, setSort] = useState<string>('price_desc')
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
+
+  useEffect(() => {
+    setPage(1)
+  }, [query, sort])
 
   useEffect(() => {
     let cancelled = false
@@ -26,9 +41,10 @@ export function SearchPage() {
       setError(null)
 
       try {
-        const result = await data.searchCards(query)
+        const result = await data.searchCards(query, page, sort)
         if (!cancelled) {
-          setCards(result)
+          setCards(result.cards)
+          setPages(result.pages)
         }
       } catch {
         if (!cancelled) {
@@ -46,19 +62,35 @@ export function SearchPage() {
     return () => {
       cancelled = true
     }
-  }, [data, query])
+  }, [data, query, page, sort])
 
   return (
     <div className="page">
-      <div className="page__actions">
+      <div className="page__header">
         <h1>
           {query ? `Search results for "${query}"` : 'Search'}
         </h1>
-        {query && (
-          <Link to="/" className="btn">
-            Clear search
-          </Link>
-        )}
+        <div style={{ display: 'flex', gap: '8px', alignItems: 'center', flexWrap: 'wrap' }}>
+          {query && (
+            <label className="page__sort">
+              <span className="page__sort-label">Sort</span>
+              <select
+                className="page__sort-select"
+                value={sort}
+                onChange={(e) => { setSort(e.target.value); setPage(1) }}
+              >
+                {CARD_SORT_OPTIONS.map((o) => (
+                  <option key={o.value} value={o.value}>{o.label}</option>
+                ))}
+              </select>
+            </label>
+          )}
+          {query && (
+            <Link to="/" className="btn">
+              Clear search
+            </Link>
+          )}
+        </div>
       </div>
 
       {!query && (
@@ -67,6 +99,7 @@ export function SearchPage() {
 
       {error && <p className="page__error">{error}</p>}
       {query && <CardGrid cards={cards} loading={loading} showSetName />}
+      <Pagination page={page} pages={pages} onPageChange={setPage} />
     </div>
   )
 }
