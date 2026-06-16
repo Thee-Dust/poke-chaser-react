@@ -1,10 +1,5 @@
-import { mockCards, mockSets } from '../api/mockData'
 import type { Card, Set } from '../api/types'
 import { fetchJson, getUrl } from '../utils/api'
-
-function isMockMode(): boolean {
-  return !import.meta.env.VITE_API_BASE_URL
-}
 
 async function getSets(page = 1, sort = 'release_date_desc') {
   const params = new URLSearchParams()
@@ -23,46 +18,47 @@ async function getSets(page = 1, sort = 'release_date_desc') {
 }
 
 async function getSet(setId: string): Promise<Set | undefined> {
-  if (isMockMode()) {
-    return mockSets.find((set) => set.id === setId)
-  }
-
-  const { json } = await fetchJson<Set>(getUrl(`sets/${setId}`))
+  const { json } = await fetchJson<Set>(getUrl(`cards/cardSet/${setId}`))
   return json
 }
 
-async function getCardsBySet(setId: string): Promise<Card[]> {
-  if (isMockMode()) {
-    return mockCards.filter((card) => card.setId === setId)
-  }
+async function getCardsBySet(setId: string, page = 1, sort = 'number_asc') {
+  const params = new URLSearchParams()
+  params.set('page', String(page))
+  params.set('sort', sort)
 
-  const { json } = await fetchJson<Card[]>(getUrl(`sets/${setId}/cards`))
-  return json
-}
-
-async function searchCards(query: string): Promise<Card[]> {
-  const normalized = query.trim().toLowerCase()
-
-  if (!normalized) {
-    return []
-  }
-
-  if (isMockMode()) {
-    return mockCards.filter((card) => card.name.toLowerCase().includes(normalized))
-  }
-
-  const { json } = await fetchJson<Card[]>(
-    getUrl(`cards?q=${encodeURIComponent(normalized)}`),
+  const { json } = await fetchJson<any>(
+    getUrl(`cards/cardSet/${setId}/cards/?${params.toString()}`),
   )
-  return json
+
+  return {
+    cards: json.results ?? [],
+    page: json.meta?.pagination?.page ?? page,
+    pages: json.meta?.pagination?.pages ?? 1,
+  }
+}
+
+async function searchCards(query: string, page = 1, sort = 'number_asc'): Promise<{ cards: Card[]; pages: number }> {
+  const normalized = query.trim()
+  if (!normalized) return { cards: [], pages: 1 }
+
+  const params = new URLSearchParams()
+  params.set('search', normalized)
+  params.set('page', String(page))
+  params.set('sort', sort)
+
+  const { json } = await fetchJson<any>(
+    getUrl(`cards/card/?${params.toString()}`),
+  )
+
+  return {
+    cards: json.results ?? [],
+    pages: json.meta?.pagination?.pages ?? 1,
+  }
 }
 
 async function getCard(cardId: string): Promise<Card | undefined> {
-  if (isMockMode()) {
-    return mockCards.find((card) => card.id === cardId)
-  }
-
-  const { json } = await fetchJson<Card>(getUrl(`cards/${cardId}`))
+  const { json } = await fetchJson<Card>(getUrl(`cards/card/${cardId}/`))
   return json
 }
 
