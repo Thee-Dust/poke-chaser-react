@@ -1,0 +1,116 @@
+.app-header {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 16px 24px;
+  border-bottom: 1px solid var(--border);
+  background: var(--bg);
+  flex-wrap: wrap;
+}
+
+.app-header__logo {
+  font-family: var(--heading);
+  font-size: 20px;
+  font-weight: 600;
+  color: var(--text-h);
+  text-decoration: none;
+  letter-spacing: -0.02em;
+  flex-shrink: 0;
+}
+
+.app-header__search {
+  display: flex;
+  flex: 1;
+  min-width: 200px;
+  gap: 8px;
+}
+
+.app-header__search input {
+  flex: 1;
+  padding: 8px 12px;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  background: var(--bg);
+  color: var(--text-h);
+  font: inherit;
+}
+
+.app-header__search input:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 1px;
+}
+
+.app-header__search button {
+  padding: 8px 16px;
+  border: 2px solid transparent;
+  border-radius: 6px;
+  background: var(--accent-bg);
+  color: var(--accent);
+  font: inherit;
+  cursor: pointer;
+  transition: border-color 0.2s;
+}
+
+.app-header__search button:hover {
+  border-color: var(--accent-border);
+}
+
+.app-header__auth {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-shrink: 0;
+}
+
+.app-header__auth a {
+  color: var(--accent);
+  text-decoration: none;
+  font-size: 15px;
+}
+
+.app-header__auth a:hover {
+  text-decoration: underline;
+}
+
+.app-header__signup {
+  padding: 6px 12px;
+  border-radius: 6px;
+  background: var(--accent-bg);
+  border: 2px solid transparent;
+}
+
+.app-header__signup:hover {
+  border-color: var(--accent-border);
+  text-decoration: none;
+}
+
+.app-header__user {
+  color: var(--text);
+  font-size: 14px;
+}
+
+.app-header__auth button {
+  padding: 6px 12px;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  background: transparent;
+  color: var(--text);
+  font: inherit;
+  cursor: pointer;
+}
+
+.app-header__auth button:hover {
+  border-color: var(--accent-border);
+  color: var(--accent);
+}
+
+@media (max-width: 640px) {
+  .app-header {
+    padding: 12px 16px;
+  }
+
+  .app-header__search {
+    order: 3;
+    flex-basis: 100%;
+  }
+}
