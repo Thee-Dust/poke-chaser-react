@@ -19,7 +19,7 @@ const ENERGY_ABBR: Record<string, string> = {
 export function CardDetailPage() {
   const data = useData()
   const { cardId = '' } = useParams()
-  const { user, isInCollection, addToCollection, removeFromCollection } = useAuth()
+  const { user, isInCollection, addToCollection, removeFromCollection, openAuthModal } = useAuth()
   const [card, setCard] = useState<Card | undefined>()
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
@@ -123,7 +123,14 @@ export function CardDetailPage() {
               )
             ) : (
               <p className="page__message">
-                <Link to="/login">Sign in</Link> to track this card in your collection.
+                <button
+                  type="button"
+                  className="btn btn--link"
+                  onClick={() => openAuthModal('login')}
+                >
+                  Sign in
+                </button>{' '}
+                to track this card in your collection.
               </p>
             )}
           </div>
