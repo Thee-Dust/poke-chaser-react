@@ -3,36 +3,35 @@ import {
   createContext,
   useCallback,
   useContext,
+  useEffect,
   useMemo,
   useState,
   type ReactNode,
 } from 'react'
 import type { User } from '../api/types'
+import { ensureCsrf, fetchJson, getUrl } from '../utils/api'
 
-const AUTH_STORAGE_KEY = 'poke-chaser-auth'
 const COLLECTION_STORAGE_KEY = 'poke-chaser-collection'
+
+type AuthModalMode = 'login' | 'register'
 
 type AuthContextValue = {
   user: User | null
+  loading: boolean
   collection: string[]
   login: (email: string, password: string) => Promise<void>
-  signup: (name: string, email: string, password: string) => Promise<void>
-  logout: () => void
+  register: (username: string, email: string, password: string) => Promise<void>
+  logout: () => Promise<void>
   addToCollection: (cardId: string) => void
   removeFromCollection: (cardId: string) => void
   isInCollection: (cardId: string) => boolean
+  authModalOpen: boolean
+  authModalMode: AuthModalMode
+  openAuthModal: (mode?: AuthModalMode) => void
+  closeAuthModal: () => void
 }
 
 const AuthContext = createContext<AuthContextValue | null>(null)
-
-function loadStoredUser(): User | null {
-  try {
-    const raw = localStorage.getItem(AUTH_STORAGE_KEY)
-    return raw ? (JSON.parse(raw) as User) : null
-  } catch {
-    return null
-  }
-}
 
 function loadStoredCollection(): string[] {
   try {
@@ -44,16 +43,17 @@ function loadStoredCollection(): string[] {
 }
 
 export function AuthProvider({ children }: { children: ReactNode }) {
-  const [user, setUser] = useState<User | null>(() => loadStoredUser())
+  const [user, setUser] = useState<User | null>(null)
+  const [loading, setLoading] = useState(true)
   const [collection, setCollection] = useState<string[]>(() => loadStoredCollection())
+  const [authModalOpen, setAuthModalOpen] = useState(false)
+  const [authModalMode, setAuthModalMode] = useState<AuthModalMode>('login')
 
-  const persistUser = useCallback((nextUser: User | null) => {
-    setUser(nextUser)
-    if (nextUser) {
-      localStorage.setItem(AUTH_STORAGE_KEY, JSON.stringify(nextUser))
-    } else {
-      localStorage.removeItem(AUTH_STORAGE_KEY)
-    }
+  useEffect(() => {
+    fetchJson<User>(getUrl('auth/me/'))
+      .then(({ json }) => setUser(json))
+      .catch(() => setUser(null))
+      .finally(() => setLoading(false))
   }, [])
 
   const persistCollection = useCallback((nextCollection: string[]) => {
@@ -61,35 +61,32 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     localStorage.setItem(COLLECTION_STORAGE_KEY, JSON.stringify(nextCollection))
   }, [])
 
-  const login = useCallback(
-    async (email: string, password: string) => {
-      void password
-      const nextUser: User = {
-        id: 'local-user',
-        email,
-        name: email.split('@')[0] || 'Trainer',
-      }
-      persistUser(nextUser)
+  const login = useCallback(async (identifier: string, password: string) => {
+    await ensureCsrf()
+    const { json } = await fetchJson<User>(getUrl('auth/login/'), {
+      method: 'POST',
+      body: JSON.stringify({ identifier, password }),
+    })
+    setUser(json)
+  }, [])
+
+  const register = useCallback(
+    async (username: string, email: string, password: string) => {
+      await ensureCsrf()
+      const { json } = await fetchJson<User>(getUrl('auth/register/'), {
+        method: 'POST',
+        body: JSON.stringify({ username, email, password }),
+      })
+      setUser(json)
     },
-    [persistUser],
+    [],
   )
 
-  const signup = useCallback(
-    async (name: string, email: string, password: string) => {
-      void password
-      const nextUser: User = {
-        id: 'local-user',
-        email,
-        name: name || email.split('@')[0] || 'Trainer',
-      }
-      persistUser(nextUser)
-    },
-    [persistUser],
-  )
-
-  const logout = useCallback(() => {
-    persistUser(null)
-  }, [persistUser])
+  const logout = useCallback(async () => {
+    await ensureCsrf()
+    await fetchJson(getUrl('auth/logout/'), { method: 'POST' })
+    setUser(null)
+  }, [])
 
   const addToCollection = useCallback(
     (cardId: string) => {
@@ -111,26 +108,45 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     [collection],
   )
 
+  const openAuthModal = useCallback((mode: AuthModalMode = 'login') => {
+    setAuthModalMode(mode)
+    setAuthModalOpen(true)
+  }, [])
+
+  const closeAuthModal = useCallback(() => {
+    setAuthModalOpen(false)
+  }, [])
+
   const value = useMemo(
     () => ({
       user,
+      loading,
       collection,
       login,
-      signup,
+      register,
       logout,
       addToCollection,
       removeFromCollection,
       isInCollection,
+      authModalOpen,
+      authModalMode,
+      openAuthModal,
+      closeAuthModal,
     }),
     [
       user,
+      loading,
       collection,
       login,
-      signup,
+      register,
       logout,
       addToCollection,
       removeFromCollection,
       isInCollection,
+      authModalOpen,
+      authModalMode,
+      openAuthModal,
+      closeAuthModal,
     ],
   )
 

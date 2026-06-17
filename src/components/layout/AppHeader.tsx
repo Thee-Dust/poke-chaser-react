@@ -1,4 +1,5 @@
-import { Link } from 'react-router-dom'
+import { useEffect, useRef, useState } from 'react'
+import { Link, NavLink } from 'react-router-dom'
 import { useAuth } from '../../context/AuthContext'
 import './AppHeader.css'
 
@@ -8,7 +9,27 @@ type AppHeaderProps = {
 }
 
 export function AppHeader({ searchQuery = '', onSearchSubmit }: AppHeaderProps) {
-  const { user, logout } = useAuth()
+  const { user, loading, logout, openAuthModal } = useAuth()
+  const [menuOpen, setMenuOpen] = useState(false)
+  const menuRef = useRef<HTMLDivElement>(null)
+
+  useEffect(() => {
+    if (!menuOpen) return
+    function handleOutside(e: MouseEvent) {
+      if (menuRef.current && !menuRef.current.contains(e.target as Node)) {
+        setMenuOpen(false)
+      }
+    }
+    function handleEscape(e: KeyboardEvent) {
+      if (e.key === 'Escape') setMenuOpen(false)
+    }
+    document.addEventListener('mousedown', handleOutside)
+    document.addEventListener('keydown', handleEscape)
+    return () => {
+      document.removeEventListener('mousedown', handleOutside)
+      document.removeEventListener('keydown', handleEscape)
+    }
+  }, [menuOpen])
 
   function handleSearchSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault()
@@ -36,20 +57,57 @@ export function AppHeader({ searchQuery = '', onSearchSubmit }: AppHeaderProps) 
       </form>
 
       <nav className="app-header__auth" aria-label="Account">
-        {user ? (
-          <>
-            <Link to="/collection">My Collection</Link>
-            <span className="app-header__user">{user.name}</span>
-            <button type="button" onClick={logout}>
-              Log out
+        {loading ? null : user ? (
+          <div className="app-header__user-menu" ref={menuRef}>
+            <button
+              type="button"
+              className="app-header__user-btn"
+              aria-haspopup="menu"
+              aria-expanded={menuOpen}
+              onClick={() => setMenuOpen((o) => !o)}
+            >
+              {user.username}
+              <span className="app-header__user-caret" aria-hidden="true">
+                {menuOpen ? '▴' : '▾'}
+              </span>
             </button>
-          </>
+
+            {menuOpen && (
+              <div className="app-header__menu" role="menu">
+                <NavLink
+                  to="/collection"
+                  className="app-header__menu-item"
+                  role="menuitem"
+                  onClick={() => setMenuOpen(false)}
+                >
+                  Collection
+                </NavLink>
+                <button
+                  type="button"
+                  className="app-header__menu-item"
+                  role="menuitem"
+                  onClick={() => {
+                    setMenuOpen(false)
+                    void logout()
+                  }}
+                >
+                  Log out
+                </button>
+              </div>
+            )}
+          </div>
         ) : (
           <>
-            <Link to="/login">Log in</Link>
-            <Link to="/signup" className="app-header__signup">
+            <button type="button" onClick={() => openAuthModal('login')}>
+              Log in
+            </button>
+            <button
+              type="button"
+              className="app-header__signup"
+              onClick={() => openAuthModal('register')}
+            >
               Sign up
-            </Link>
+            </button>
           </>
         )}
       </nav>

@@ -1,4 +1,5 @@
 import { Outlet, useNavigate, useSearchParams } from 'react-router-dom'
+import { AuthModal } from '../auth/AuthModal'
 import { AppHeader } from './AppHeader'
 import './AppShell.css'
 
@@ -22,6 +23,7 @@ export function AppShell() {
       <main className="app-shell__main">
         <Outlet />
       </main>
+      <AuthModal />
     </div>
   )
 }

@@ -84,9 +84,72 @@
   text-decoration: none;
 }
 
-.app-header__user {
-  color: var(--text);
+.app-header__user-menu {
+  position: relative;
+}
+
+.app-header__user-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  background: transparent;
+  color: var(--text-h);
+  font: inherit;
   font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+}
+
+.app-header__user-btn:hover {
+  border-color: var(--accent-border);
+  color: var(--accent);
+}
+
+.app-header__user-caret {
+  font-size: 10px;
+  opacity: 0.7;
+}
+
+.app-header__menu {
+  position: absolute;
+  top: calc(100% + 6px);
+  right: 0;
+  min-width: 160px;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  box-shadow: var(--shadow);
+  z-index: 100;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+.app-header__menu .app-header__menu-item {
+  display: block;
+  width: 100%;
+  padding: 10px 16px;
+  text-align: left;
+  font: inherit;
+  font-size: 14px;
+  color: var(--text-h);
+  text-decoration: none;
+  background: none;
+  border: none;
+  cursor: pointer;
+}
+
+.app-header__menu .app-header__menu-item.active {
+  color: var(--accent);
+}
+
+.app-header__menu .app-header__menu-item:hover {
+  background: var(--accent-bg);
+  color: var(--accent);
+  text-decoration: none;
 }
 
 .app-header__auth button {
