@@ -11,6 +11,7 @@ export function AuthModal() {
   const [password, setPassword] = useState('')
   const [confirmPassword, setConfirmPassword] = useState('')
   const [error, setError] = useState<string | null>(null)
+  const [fieldErrors, setFieldErrors] = useState<{ identifier?: boolean; password?: boolean }>({})
   const [submitting, setSubmitting] = useState(false)
 
   const dialogRef = useRef<HTMLDivElement>(null)
@@ -22,6 +23,7 @@ export function AuthModal() {
     setPassword('')
     setConfirmPassword('')
     setError(null)
+    setFieldErrors({})
     setSubmitting(false)
   }, [authModalOpen, authModalMode])
 
@@ -41,6 +43,16 @@ export function AuthModal() {
     if (authModalMode === 'register' && password !== confirmPassword) {
       setError('Passwords do not match.')
       return
+    }
+    if (authModalMode === 'login') {
+      const identifierMissing = email.trim() === ''
+      const passwordMissing = password === ''
+      if (identifierMissing || passwordMissing) {
+        setFieldErrors({ identifier: identifierMissing, password: passwordMissing })
+        setError(null)
+        return
+      }
+      setFieldErrors({})
     }
     setSubmitting(true)
     setError(null)
@@ -65,6 +77,11 @@ export function AuthModal() {
   }
 
   const isLogin = authModalMode === 'login'
+  const registerComplete =
+    username.trim() !== '' &&
+    email.trim() !== '' &&
+    password !== '' &&
+    confirmPassword !== ''
 
   return (
     <div className="auth-modal__overlay" onClick={handleOverlayClick} aria-modal="true" role="dialog" aria-label={isLogin ? 'Log in' : 'Create account'}>
@@ -115,11 +132,20 @@ export function AuthModal() {
             <input
               type={isLogin ? 'text' : 'email'}
               value={email}
-              onChange={(e) => setEmail(e.target.value)}
+              onChange={(e) => {
+                setEmail(e.target.value)
+                if (fieldErrors.identifier) {
+                  setFieldErrors((prev) => ({ ...prev, identifier: false }))
+                }
+              }}
               required
               autoComplete={isLogin ? 'username' : 'email'}
               autoFocus={isLogin}
+              className={isLogin && fieldErrors.identifier ? 'auth-modal__input--error' : undefined}
             />
+            {isLogin && fieldErrors.identifier && (
+              <span className="auth-modal__field-error">Required</span>
+            )}
           </label>
 
           <label className="auth-modal__label">
@@ -127,10 +153,19 @@ export function AuthModal() {
             <input
               type="password"
               value={password}
-              onChange={(e) => setPassword(e.target.value)}
+              onChange={(e) => {
+                setPassword(e.target.value)
+                if (fieldErrors.password) {
+                  setFieldErrors((prev) => ({ ...prev, password: false }))
+                }
+              }}
               required
               autoComplete={isLogin ? 'current-password' : 'new-password'}
+              className={isLogin && fieldErrors.password ? 'auth-modal__input--error' : undefined}
             />
+            {isLogin && fieldErrors.password && (
+              <span className="auth-modal__field-error">Required</span>
+            )}
           </label>
 
           {!isLogin && (
@@ -148,7 +183,11 @@ export function AuthModal() {
 
           {error && <p className="auth-modal__error">{error}</p>}
 
-          <button type="submit" className="btn btn--primary" disabled={submitting}>
+          <button
+            type="submit"
+            className="btn btn--primary"
+            disabled={submitting || (!isLogin && !registerComplete)}
+          >
             {submitting
               ? isLogin
                 ? 'Logging in...'

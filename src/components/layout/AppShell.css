@@ -107,7 +107,19 @@
   color: #fff;
 }
 
-.btn--primary:hover {
+.btn:disabled,
+.btn--primary:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.btn--primary:disabled {
+  background: var(--border);
+  color: var(--text);
+  border-color: transparent;
+}
+
+.btn--primary:hover:not(:disabled) {
   border-color: var(--accent);
   opacity: 0.9;
 }

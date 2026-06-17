@@ -101,6 +101,16 @@
   border-color: var(--accent);
 }
 
+.auth-modal__label input.auth-modal__input--error {
+  border-color: #dc2626;
+}
+
+.auth-modal__field-error {
+  font-size: 13px;
+  color: #dc2626;
+  margin-top: -2px;
+}
+
 .auth-modal__error {
   margin: 0;
   font-size: 14px;
