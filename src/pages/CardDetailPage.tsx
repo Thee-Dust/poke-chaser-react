@@ -19,12 +19,10 @@ const ENERGY_ABBR: Record<string, string> = {
 export function CardDetailPage() {
   const data = useData()
   const { cardId = '' } = useParams()
-  const { user, isInCollection, addToCollection, removeFromCollection, openAuthModal } = useAuth()
+  const { user, openAuthModal } = useAuth()
   const [card, setCard] = useState<Card | undefined>()
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
-
-  const inCollection = card ? isInCollection(card.id) : false
 
   useEffect(() => {
     let cancelled = false
@@ -102,26 +100,8 @@ export function CardDetailPage() {
             <div className="card-detail__image" />
           )}
 
-          <div className="card-detail__cta">
-            {user ? (
-              inCollection ? (
-                <button
-                  type="button"
-                  className="btn"
-                  onClick={() => removeFromCollection(card.id)}
-                >
-                  Remove from collection
-                </button>
-              ) : (
-                <button
-                  type="button"
-                  className="btn btn--primary"
-                  onClick={() => addToCollection(card.id)}
-                >
-                  Add to collection
-                </button>
-              )
-            ) : (
+          {!user && (
+            <div className="card-detail__cta">
               <p className="page__message">
                 <button
                   type="button"
@@ -132,8 +112,8 @@ export function CardDetailPage() {
                 </button>{' '}
                 to track this card in your collection.
               </p>
-            )}
-          </div>
+            </div>
+          )}
         </div>
 
         <div className="card-detail__meta">

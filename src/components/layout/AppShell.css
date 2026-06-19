@@ -67,6 +67,17 @@
   padding: 24px 0;
 }
 
+.collection__stats {
+  display: flex;
+  gap: 16px;
+  margin-bottom: 20px;
+}
+
+.collection__stat {
+  font-size: 14px;
+  color: var(--text);
+}
+
 .page__error {
   color: #dc2626;
   padding: 16px;

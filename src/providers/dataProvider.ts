@@ -1,4 +1,4 @@
-import type { Card, Set } from '../api/types'
+import type { Card, CollectionDetail, CollectionSummary, Set } from '../api/types'
 import { fetchJson, getUrl } from '../utils/api'
 
 async function getSets(page = 1, sort = 'release_date_desc') {
@@ -62,12 +62,24 @@ async function getCard(cardId: string): Promise<Card | undefined> {
   return json
 }
 
+async function getCollections(): Promise<CollectionSummary[]> {
+  const { json } = await fetchJson<CollectionSummary[]>(getUrl('collections/'))
+  return Array.isArray(json) ? json : []
+}
+
+async function getCollection(id: number): Promise<CollectionDetail | undefined> {
+  const { json } = await fetchJson<CollectionDetail>(getUrl(`collections/${id}/`))
+  return json
+}
+
 export const dataProvider = {
   getSets,
   getSet,
   getCardsBySet,
   searchCards,
   getCard,
+  getCollections,
+  getCollection,
 }
 
 export type DataProvider = typeof dataProvider

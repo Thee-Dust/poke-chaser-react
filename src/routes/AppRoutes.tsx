@@ -17,6 +17,7 @@ export function AppRoutes() {
         <Route path="cards/:cardId" element={<CardDetailPage />} />
         <Route element={<ProtectedRoute />}>
           <Route path="collection" element={<CollectionPage />} />
+          <Route path="collection/:collectionId" element={<CollectionPage />} />
         </Route>
       </Route>
     </Routes>
