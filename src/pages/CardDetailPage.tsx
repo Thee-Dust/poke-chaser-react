@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { Link, useParams } from 'react-router-dom'
 import type { Card } from '../api/types'
+import { AddToCollectionModal } from '../components/collections/AddToCollectionModal'
 import { Breadcrumb } from '../components/layout/Breadcrumb'
 import { useAuth } from '../context/AuthContext'
 import { useData } from '../providers/DataProviderContext'
@@ -23,6 +24,7 @@ export function CardDetailPage() {
   const [card, setCard] = useState<Card | undefined>()
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
+  const [addModalOpen, setAddModalOpen] = useState(false)
 
   useEffect(() => {
     let cancelled = false
@@ -100,7 +102,17 @@ export function CardDetailPage() {
             <div className="card-detail__image" />
           )}
 
-          {!user && (
+          {user ? (
+            <div className="card-detail__cta">
+              <button
+                type="button"
+                className="btn btn--link"
+                onClick={() => setAddModalOpen(true)}
+              >
+                Add to collection
+              </button>
+            </div>
+          ) : (
             <div className="card-detail__cta">
               <p className="page__message">
                 <button
@@ -260,6 +272,14 @@ export function CardDetailPage() {
 
         </div>
       </div>
+
+      {addModalOpen && card && (
+        <AddToCollectionModal
+          cardId={card.id}
+          cardName={card.name}
+          onClose={() => setAddModalOpen(false)}
+        />
+      )}
     </div>
   )
 }
