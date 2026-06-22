@@ -1,103 +1,264 @@
-import { useEffect, useState } from 'react'
-import { Navigate, useNavigate, useParams } from 'react-router-dom'
-import type { CollectionDetail, CollectionSummary } from '../api/types'
+import { useEffect, useRef, useState } from 'react'
+import { Navigate, useParams } from 'react-router-dom'
+import type { Card, CollectionDetail } from '../api/types'
 import { CardGrid } from '../components/cards/CardGrid'
+import { Breadcrumb } from '../components/layout/Breadcrumb'
 import { useData } from '../providers/DataProviderContext'
+import './CollectionPage.css'
+
+const CARD_SORT_OPTIONS = [
+  { value: 'number_asc', label: 'Default' },
+  { value: 'price_desc', label: 'Price: High to Low' },
+  { value: 'price_asc', label: 'Price: Low to High' },
+  { value: 'name_asc', label: 'A–Z' },
+  { value: 'name_desc', label: 'Z–A' },
+] as const
+
+type SortValue = typeof CARD_SORT_OPTIONS[number]['value']
+
+function sortCards(cards: Card[], sort: SortValue): Card[] {
+  return [...cards].sort((a, b) => {
+    switch (sort) {
+      case 'name_asc': return (a.name ?? '').localeCompare(b.name ?? '')
+      case 'name_desc': return (b.name ?? '').localeCompare(a.name ?? '')
+      case 'price_desc':
+      case 'price_asc': {
+        const priceOf = (c: Card) => {
+          const prices = c.tcgplayer?.prices
+          if (!prices) return -1
+          const markets = Object.values(prices)
+            .map((p) => p?.market)
+            .filter((m): m is number => typeof m === 'number')
+          return markets.length ? Math.max(...markets) : -1
+        }
+        return sort === 'price_desc'
+          ? priceOf(b) - priceOf(a)
+          : priceOf(a) - priceOf(b)
+      }
+      case 'number_asc':
+      default: {
+        const num = (c: Card) => {
+          const n = parseInt(c.number ?? '', 10)
+          return isNaN(n) ? Infinity : n
+        }
+        return num(a) - num(b)
+      }
+    }
+  })
+}
 
 export function CollectionPage() {
-  const { collectionId } = useParams<{ collectionId?: string }>()
-  const navigate = useNavigate()
+  const { collectionId } = useParams<{ collectionId: string }>()
   const data = useData()
 
-  const [collections, setCollections] = useState<CollectionSummary[]>([])
   const [detail, setDetail] = useState<CollectionDetail | null>(null)
-  const [loadingList, setLoadingList] = useState(true)
-  const [loadingDetail, setLoadingDetail] = useState(false)
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
+
+  const [sort, setSort] = useState<SortValue>('number_asc')
+
+  const [editing, setEditing] = useState(false)
+  const [editName, setEditName] = useState('')
+  const [saving, setSaving] = useState(false)
+  const [saveError, setSaveError] = useState<string | null>(null)
+  const inputRef = useRef<HTMLInputElement>(null)
+
+  const activeId = Number(collectionId)
+  const invalidId = !collectionId || isNaN(activeId)
 
   useEffect(() => {
-    let cancelled = false
-    setLoadingList(true)
-    data.getCollections().then((list) => {
-      if (cancelled) return
-      setCollections(list)
-      setLoadingList(false)
-    }).catch(() => {
-      if (!cancelled) setLoadingList(false)
-    })
-    return () => { cancelled = true }
-  }, [data])
+    if (invalidId) return
 
-  const activeId = collectionId ? Number(collectionId) : null
+    let cancelled = false
+
+    async function load() {
+      setLoading(true)
+      setError(null)
+      setDetail(null)
+
+      try {
+        const d = await data.getCollection(activeId)
+        if (!cancelled) {
+          setDetail(d ?? null)
+        }
+      } catch {
+        if (!cancelled) {
+          setError('Failed to load collection. Please try again.')
+        }
+      } finally {
+        if (!cancelled) {
+          setLoading(false)
+        }
+      }
+    }
+
+    load()
+
+    return () => {
+      cancelled = true
+    }
+  }, [data, activeId, invalidId])
 
   useEffect(() => {
-    if (activeId === null || isNaN(activeId)) return
-    let cancelled = false
-    setLoadingDetail(true)
-    setDetail(null)
-    data.getCollection(activeId).then((d) => {
-      if (cancelled) return
-      setDetail(d ?? null)
-      setLoadingDetail(false)
-    }).catch(() => {
-      if (!cancelled) setLoadingDetail(false)
-    })
-    return () => { cancelled = true }
-  }, [data, activeId])
+    if (editing) {
+      inputRef.current?.focus()
+      inputRef.current?.select()
+    }
+  }, [editing])
 
-  if (!loadingList && !collectionId && collections.length > 0) {
-    const defaultCollection =
-      collections.find((c) => c.is_default) ?? collections[0]
-    return <Navigate to={`/collection/${defaultCollection.id}`} replace />
+  function startEditing() {
+    setEditName(detail?.name ?? '')
+    setSaveError(null)
+    setEditing(true)
   }
 
-  const activeCollection = collections.find((c) => c.id === activeId)
-  const cards = detail?.items.map((item) => item.card) ?? []
+  function cancelEditing() {
+    setEditing(false)
+    setSaveError(null)
+  }
+
+  async function handleSave() {
+    const trimmed = editName.trim()
+    if (!trimmed || !detail) return
+
+    setSaving(true)
+    setSaveError(null)
+
+    try {
+      await data.updateCollection(detail.id, trimmed)
+      setDetail((prev) => prev ? { ...prev, name: trimmed } : prev)
+      setEditing(false)
+    } catch {
+      setSaveError('Failed to save. Please try again.')
+    } finally {
+      setSaving(false)
+    }
+  }
+
+  function handleKeyDown(e: React.KeyboardEvent<HTMLInputElement>) {
+    if (e.key === 'Enter') void handleSave()
+    if (e.key === 'Escape') cancelEditing()
+  }
+
+  if (invalidId) {
+    return <Navigate to="/collections" replace />
+  }
+
+  const rawCards = detail?.items.map((item) => item.card) ?? []
+  const cards = sortCards(rawCards, sort)
+  const marketValue = detail ? Number(detail.total_market_value) : 0
+  const totalSpent = detail ? Number(detail.total_spent) : 0
+  const gainLoss = detail ? Number(detail.gain_loss) : 0
+  const gainLossClass =
+    gainLoss > 0
+      ? 'collection-detail__gain-loss--positive'
+      : gainLoss < 0
+        ? 'collection-detail__gain-loss--negative'
+        : ''
 
   return (
     <div className="page">
-      <div className="page__header">
-        <h1>{activeCollection?.name ?? 'My Collection'}</h1>
+      <Breadcrumb
+        items={[
+          { label: 'Collections', to: '/collections' },
+          { label: detail?.name ?? 'Collection' },
+        ]}
+      />
 
-        {collections.length > 1 && (
-          <div className="page__sort">
-            <label className="page__sort-label" htmlFor="collection-switcher">
-              Collection
-            </label>
-            <select
-              id="collection-switcher"
-              className="page__sort-select"
-              value={activeId ?? ''}
-              onChange={(e) => navigate(`/collection/${e.target.value}`)}
+      <div className="page__header">
+        {editing ? (
+          <div className="collection-detail__rename">
+            <input
+              ref={inputRef}
+              className="collection-detail__rename-input"
+              value={editName}
+              onChange={(e) => setEditName(e.target.value)}
+              onKeyDown={handleKeyDown}
+              aria-label="Collection name"
+              disabled={saving}
+            />
+            <button
+              className="btn btn--primary"
+              onClick={() => void handleSave()}
+              disabled={saving || !editName.trim()}
             >
-              {collections.map((c) => (
-                <option key={c.id} value={c.id}>
-                  {c.name}
-                  {c.is_default ? ' (default)' : ''}
-                </option>
-              ))}
-            </select>
+              {saving ? 'Saving…' : 'Save'}
+            </button>
+            <button
+              className="btn"
+              onClick={cancelEditing}
+              disabled={saving}
+            >
+              Cancel
+            </button>
+            {saveError && <span className="collection-detail__save-error">{saveError}</span>}
+          </div>
+        ) : (
+          <div className="collection-detail__title">
+            <h1>{detail?.name ?? 'Collection'}</h1>
+            {detail && (
+              <button
+                className="collection-detail__edit-btn"
+                onClick={startEditing}
+                aria-label="Edit collection name"
+              >
+                <svg viewBox="0 0 16 16" width="16" height="16" aria-hidden="true" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M11.5 2.5a2.121 2.121 0 1 1 3 3L5 15H1v-4L11.5 2.5Z" />
+                </svg>
+              </button>
+            )}
           </div>
         )}
       </div>
 
-      {activeCollection && (
-        <div className="collection__stats">
-          <span className="collection__stat">
-            {activeCollection.card_count} {activeCollection.card_count === 1 ? 'card' : 'cards'}
-          </span>
-          {activeCollection.total_market_value > 0 && (
-            <span className="collection__stat">
-              ${activeCollection.total_market_value.toFixed(2)} market value
+      {error && <p className="page__error">{error}</p>}
+
+      {detail && (
+        <div className="collection-detail__summary">
+          <div className="collection-detail__summary-stat">
+            <span className="collection-detail__summary-label">Cards</span>
+            <span className="collection-detail__summary-value">{detail.card_count}</span>
+          </div>
+          <div className="collection-detail__summary-stat">
+            <span className="collection-detail__summary-label">Market Value</span>
+            <span className="collection-detail__summary-value">${marketValue.toFixed(2)}</span>
+          </div>
+          <div className="collection-detail__summary-stat">
+            <span className="collection-detail__summary-label">Total Spent</span>
+            <span className="collection-detail__summary-value">${totalSpent.toFixed(2)}</span>
+          </div>
+          <div className="collection-detail__summary-stat">
+            <span className="collection-detail__summary-label">Gain / Loss</span>
+            <span className={`collection-detail__summary-value collection-detail__gain-loss ${gainLossClass}`}>
+              {gainLoss >= 0 ? '+' : ''}${gainLoss.toFixed(2)}
             </span>
-          )}
+          </div>
         </div>
       )}
 
-      {!loadingList && collections.length === 0 && (
-        <p className="page__message">No collections found.</p>
+      {!loading && !detail && !error && (
+        <p className="page__message">Collection not found.</p>
       )}
 
-      <CardGrid cards={cards} loading={loadingList || loadingDetail} showSetName />
+      {detail && (
+        <div className="page__header">
+          <span />
+          <label className="page__sort">
+            <span className="page__sort-label">Sort</span>
+            <select
+              className="page__sort-select"
+              value={sort}
+              onChange={(e) => setSort(e.target.value as SortValue)}
+            >
+              {CARD_SORT_OPTIONS.map((o) => (
+                <option key={o.value} value={o.value}>{o.label}</option>
+              ))}
+            </select>
+          </label>
+        </div>
+      )}
+
+      <CardGrid cards={cards} loading={loading} showSetName />
     </div>
   )
 }

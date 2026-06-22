@@ -75,12 +75,12 @@ export function AppHeader({ searchQuery = '', onSearchSubmit }: AppHeaderProps) 
             {menuOpen && (
               <div className="app-header__menu" role="menu">
                 <NavLink
-                  to="/collection"
+                  to="/collections"
                   className="app-header__menu-item"
                   role="menuitem"
                   onClick={() => setMenuOpen(false)}
                 >
-                  Collection
+                  Collections
                 </NavLink>
                 <button
                   type="button"
