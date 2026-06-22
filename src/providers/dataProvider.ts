@@ -1,5 +1,5 @@
 import type { Card, CollectionDetail, CollectionSummary, Set } from '../api/types'
-import { fetchJson, getUrl } from '../utils/api'
+import { ensureCsrf, fetchJson, getUrl } from '../utils/api'
 
 async function getSets(page = 1, sort = 'release_date_desc') {
   const params = new URLSearchParams()
@@ -72,6 +72,24 @@ async function getCollection(id: number): Promise<CollectionDetail | undefined> 
   return json
 }
 
+async function createCollection(name: string): Promise<CollectionSummary> {
+  await ensureCsrf()
+  const { json } = await fetchJson<{ id: number; name: string; is_default: boolean }>(
+    getUrl('collections/'),
+    { method: 'POST', body: JSON.stringify({ name }) },
+  )
+  return { ...json, card_count: 0, total_market_value: '0.00' }
+}
+
+async function updateCollection(id: number, name: string): Promise<CollectionDetail> {
+  await ensureCsrf()
+  const { json } = await fetchJson<CollectionDetail>(getUrl(`collections/${id}/`), {
+    method: 'PATCH',
+    body: JSON.stringify({ name }),
+  })
+  return json
+}
+
 export const dataProvider = {
   getSets,
   getSet,
@@ -80,6 +98,8 @@ export const dataProvider = {
   getCard,
   getCollections,
   getCollection,
+  createCollection,
+  updateCollection,
 }
 
 export type DataProvider = typeof dataProvider
