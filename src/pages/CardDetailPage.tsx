@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { Link, useParams } from 'react-router-dom'
 import type { Card } from '../api/types'
+import { AddToCollectionModal } from '../components/collections/AddToCollectionModal'
 import { Breadcrumb } from '../components/layout/Breadcrumb'
 import { useAuth } from '../context/AuthContext'
 import { useData } from '../providers/DataProviderContext'
@@ -19,12 +20,11 @@ const ENERGY_ABBR: Record<string, string> = {
 export function CardDetailPage() {
   const data = useData()
   const { cardId = '' } = useParams()
-  const { user, isInCollection, addToCollection, removeFromCollection, openAuthModal } = useAuth()
+  const { user, openAuthModal } = useAuth()
   const [card, setCard] = useState<Card | undefined>()
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
-
-  const inCollection = card ? isInCollection(card.id) : false
+  const [addModalOpen, setAddModalOpen] = useState(false)
 
   useEffect(() => {
     let cancelled = false
@@ -102,26 +102,18 @@ export function CardDetailPage() {
             <div className="card-detail__image" />
           )}
 
-          <div className="card-detail__cta">
-            {user ? (
-              inCollection ? (
-                <button
-                  type="button"
-                  className="btn"
-                  onClick={() => removeFromCollection(card.id)}
-                >
-                  Remove from collection
-                </button>
-              ) : (
-                <button
-                  type="button"
-                  className="btn btn--primary"
-                  onClick={() => addToCollection(card.id)}
-                >
-                  Add to collection
-                </button>
-              )
-            ) : (
+          {user ? (
+            <div className="card-detail__cta">
+              <button
+                type="button"
+                className="btn btn--link"
+                onClick={() => setAddModalOpen(true)}
+              >
+                Add to collection
+              </button>
+            </div>
+          ) : (
+            <div className="card-detail__cta">
               <p className="page__message">
                 <button
                   type="button"
@@ -132,8 +124,8 @@ export function CardDetailPage() {
                 </button>{' '}
                 to track this card in your collection.
               </p>
-            )}
-          </div>
+            </div>
+          )}
         </div>
 
         <div className="card-detail__meta">
@@ -280,6 +272,14 @@ export function CardDetailPage() {
 
         </div>
       </div>
+
+      {addModalOpen && card && (
+        <AddToCollectionModal
+          cardId={card.id}
+          cardName={card.name}
+          onClose={() => setAddModalOpen(false)}
+        />
+      )}
     </div>
   )
 }

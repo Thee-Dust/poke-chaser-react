@@ -69,3 +69,32 @@ export type User = {
   username: string
   email: string
 }
+
+export type CollectionSummary = {
+  id: number
+  name: string
+  is_default: boolean
+  card_count: number
+  total_market_value: string
+}
+
+export type CollectionPurchase = {
+  id: number
+  acquired_date: string
+  purchase_price: string
+}
+
+export type CollectionItem = {
+  id: number
+  card: Card
+  purchases: CollectionPurchase[]
+  market_value: string | null
+  total_spent: string
+  gain_loss: string | null
+}
+
+export type CollectionDetail = CollectionSummary & {
+  total_spent: string
+  gain_loss: string
+  items: CollectionItem[]
+}

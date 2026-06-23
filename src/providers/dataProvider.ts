@@ -1,5 +1,5 @@
-import type { Card, Set } from '../api/types'
-import { fetchJson, getUrl } from '../utils/api'
+import type { Card, CollectionDetail, CollectionSummary, Set } from '../api/types'
+import { ensureCsrf, fetchJson, getUrl } from '../utils/api'
 
 async function getSets(page = 1, sort = 'release_date_desc') {
   const params = new URLSearchParams()
@@ -62,12 +62,59 @@ async function getCard(cardId: string): Promise<Card | undefined> {
   return json
 }
 
+async function getCollections(): Promise<CollectionSummary[]> {
+  const { json } = await fetchJson<CollectionSummary[]>(getUrl('collections/'))
+  return Array.isArray(json) ? json : []
+}
+
+async function getCollection(id: number): Promise<CollectionDetail | undefined> {
+  const { json } = await fetchJson<CollectionDetail>(getUrl(`collections/${id}/`))
+  return json
+}
+
+async function createCollection(name: string): Promise<CollectionSummary> {
+  await ensureCsrf()
+  const { json } = await fetchJson<{ id: number; name: string; is_default: boolean }>(
+    getUrl('collections/'),
+    { method: 'POST', body: JSON.stringify({ name }) },
+  )
+  return { ...json, card_count: 0, total_market_value: '0.00' }
+}
+
+async function addCardToCollection(collectionId: number, cardId: string): Promise<void> {
+  await ensureCsrf()
+  await fetchJson(getUrl(`collections/${collectionId}/items/`), {
+    method: 'POST',
+    body: JSON.stringify({ card_id: cardId }),
+  })
+}
+
+async function deleteCollection(id: number): Promise<void> {
+  await ensureCsrf()
+  await fetchJson(getUrl(`collections/${id}/`), { method: 'DELETE' })
+}
+
+async function updateCollection(id: number, name: string): Promise<CollectionDetail> {
+  await ensureCsrf()
+  const { json } = await fetchJson<CollectionDetail>(getUrl(`collections/${id}/`), {
+    method: 'PATCH',
+    body: JSON.stringify({ name }),
+  })
+  return json
+}
+
 export const dataProvider = {
   getSets,
   getSet,
   getCardsBySet,
   searchCards,
   getCard,
+  getCollections,
+  getCollection,
+  createCollection,
+  addCardToCollection,
+  updateCollection,
+  deleteCollection,
 }
 
 export type DataProvider = typeof dataProvider
