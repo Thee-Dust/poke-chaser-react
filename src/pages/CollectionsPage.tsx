@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import type { CollectionSummary } from '../api/types'
 import { CollectionGrid } from '../components/collections/CollectionGrid'
 import { CreateCollectionModal } from '../components/collections/CreateCollectionModal'
+import { DeleteCollectionModal } from '../components/collections/DeleteCollectionModal'
 import { useData } from '../providers/DataProviderContext'
 
 export function CollectionsPage() {
@@ -10,6 +11,7 @@ export function CollectionsPage() {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [modalOpen, setModalOpen] = useState(false)
+  const [deleteTarget, setDeleteTarget] = useState<CollectionSummary | null>(null)
 
   useEffect(() => {
     let cancelled = false
@@ -46,6 +48,13 @@ export function CollectionsPage() {
     setModalOpen(false)
   }
 
+  async function handleDeleteConfirm() {
+    if (!deleteTarget) return
+    await data.deleteCollection(deleteTarget.id)
+    setCollections((prev) => prev.filter((c) => c.id !== deleteTarget.id))
+    setDeleteTarget(null)
+  }
+
   const defaultName = `Collection ${collections.length + 1}`
 
   return (
@@ -58,12 +67,20 @@ export function CollectionsPage() {
         collections={collections}
         loading={loading}
         onNewCollection={() => setModalOpen(true)}
+        onDelete={(c) => setDeleteTarget(c)}
       />
       {modalOpen && (
         <CreateCollectionModal
           defaultName={defaultName}
           onCreated={handleCreated}
           onClose={() => setModalOpen(false)}
+        />
+      )}
+      {deleteTarget && (
+        <DeleteCollectionModal
+          collectionName={deleteTarget.name}
+          onConfirm={handleDeleteConfirm}
+          onClose={() => setDeleteTarget(null)}
         />
       )}
     </div>

@@ -89,6 +89,11 @@ async function addCardToCollection(collectionId: number, cardId: string): Promis
   })
 }
 
+async function deleteCollection(id: number): Promise<void> {
+  await ensureCsrf()
+  await fetchJson(getUrl(`collections/${id}/`), { method: 'DELETE' })
+}
+
 async function updateCollection(id: number, name: string): Promise<CollectionDetail> {
   await ensureCsrf()
   const { json } = await fetchJson<CollectionDetail>(getUrl(`collections/${id}/`), {
@@ -109,6 +114,7 @@ export const dataProvider = {
   createCollection,
   addCardToCollection,
   updateCollection,
+  deleteCollection,
 }
 
 export type DataProvider = typeof dataProvider

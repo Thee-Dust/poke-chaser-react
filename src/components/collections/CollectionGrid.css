@@ -17,7 +17,6 @@
   padding: 20px;
   border: 1px solid var(--border);
   border-radius: 10px;
-  text-decoration: none;
   background: var(--bg);
   transition: border-color 0.2s, box-shadow 0.2s;
 }
@@ -27,6 +26,45 @@
   box-shadow: var(--shadow);
 }
 
+.collection-tile__name-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+  flex: 1;
+}
+
+.collection-tile__name {
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--text-h);
+  text-decoration: none;
+  min-width: 0;
+}
+
+.collection-tile__name:hover {
+  color: var(--accent);
+}
+
+.collection-tile__delete-btn {
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 4px;
+  border: none;
+  border-radius: 6px;
+  background: none;
+  color: var(--text);
+  cursor: pointer;
+  transition: color 0.2s, background 0.2s;
+}
+
+.collection-tile__delete-btn:hover {
+  color: #dc2626;
+  background: rgba(220, 38, 38, 0.08);
+}
+
 .collection-tile__header {
   display: flex;
   justify-content: space-between;
@@ -34,29 +72,34 @@
   gap: 16px;
 }
 
-.collection-tile__name {
-  font-size: 16px;
-  margin: 0;
-  color: var(--text-h);
-  min-width: 0;
-  flex: 1;
-}
-
 .collection-tile__value {
   font-size: 16px;
   font-weight: 600;
   color: var(--text-h);
   flex-shrink: 0;
+  text-decoration: none;
+}
+
+.collection-tile__value:hover {
+  color: var(--accent);
 }
 
 .collection-tile__count {
+  display: block;
   font-size: 14px;
   color: var(--text);
   margin: 6px 0 0;
+  text-decoration: none;
+}
+
+.collection-tile__count:hover {
+  color: var(--accent);
 }
 
 .collection-tile--new {
+  display: block;
   width: 100%;
+  padding: 20px;
   text-align: left;
   cursor: pointer;
   font: inherit;

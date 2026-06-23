@@ -1,7 +1,8 @@
 import { useEffect, useRef, useState } from 'react'
-import { Navigate, useParams } from 'react-router-dom'
+import { Navigate, useNavigate, useParams } from 'react-router-dom'
 import type { Card, CollectionDetail } from '../api/types'
 import { CardGrid } from '../components/cards/CardGrid'
+import { DeleteCollectionModal } from '../components/collections/DeleteCollectionModal'
 import { Breadcrumb } from '../components/layout/Breadcrumb'
 import { useData } from '../providers/DataProviderContext'
 import './CollectionPage.css'
@@ -49,6 +50,7 @@ function sortCards(cards: Card[], sort: SortValue): Card[] {
 
 export function CollectionPage() {
   const { collectionId } = useParams<{ collectionId: string }>()
+  const navigate = useNavigate()
   const data = useData()
 
   const [detail, setDetail] = useState<CollectionDetail | null>(null)
@@ -61,6 +63,7 @@ export function CollectionPage() {
   const [editName, setEditName] = useState('')
   const [saving, setSaving] = useState(false)
   const [saveError, setSaveError] = useState<string | null>(null)
+  const [deleteModalOpen, setDeleteModalOpen] = useState(false)
   const inputRef = useRef<HTMLInputElement>(null)
 
   const activeId = Number(collectionId)
@@ -140,6 +143,12 @@ export function CollectionPage() {
     if (e.key === 'Escape') cancelEditing()
   }
 
+  async function handleDeleteConfirm() {
+    if (!detail) return
+    await data.deleteCollection(detail.id)
+    navigate('/collections')
+  }
+
   if (invalidId) {
     return <Navigate to="/collections" replace />
   }
@@ -194,20 +203,31 @@ export function CollectionPage() {
             {saveError && <span className="collection-detail__save-error">{saveError}</span>}
           </div>
         ) : (
-          <div className="collection-detail__title">
-            <h1>{detail?.name ?? 'Collection'}</h1>
-            {detail && (
+          <>
+            <div className="collection-detail__title">
+              <h1>{detail?.name ?? 'Collection'}</h1>
+              {detail && (
+                <button
+                  className="collection-detail__edit-btn"
+                  onClick={startEditing}
+                  aria-label="Edit collection name"
+                >
+                  <svg viewBox="0 0 16 16" width="16" height="16" aria-hidden="true" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M11.5 2.5a2.121 2.121 0 1 1 3 3L5 15H1v-4L11.5 2.5Z" />
+                  </svg>
+                </button>
+              )}
+            </div>
+            {detail && !detail.is_default && (
               <button
-                className="collection-detail__edit-btn"
-                onClick={startEditing}
-                aria-label="Edit collection name"
+                type="button"
+                className="collection-detail__delete-btn"
+                onClick={() => setDeleteModalOpen(true)}
               >
-                <svg viewBox="0 0 16 16" width="16" height="16" aria-hidden="true" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-                  <path d="M11.5 2.5a2.121 2.121 0 1 1 3 3L5 15H1v-4L11.5 2.5Z" />
-                </svg>
+                Delete
               </button>
             )}
-          </div>
+          </>
         )}
       </div>
 
@@ -259,6 +279,14 @@ export function CollectionPage() {
       )}
 
       <CardGrid cards={cards} loading={loading} showSetName />
+
+      {deleteModalOpen && detail && (
+        <DeleteCollectionModal
+          collectionName={detail.name}
+          onConfirm={handleDeleteConfirm}
+          onClose={() => setDeleteModalOpen(false)}
+        />
+      )}
     </div>
   )
 }

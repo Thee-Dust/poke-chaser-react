@@ -27,6 +27,23 @@
   background: var(--accent-bg);
 }
 
+.collection-detail__delete-btn {
+  flex-shrink: 0;
+  background: none;
+  border: none;
+  font: inherit;
+  font-size: 15px;
+  color: #dc2626;
+  cursor: pointer;
+  padding: 6px 8px;
+  border-radius: 6px;
+  transition: background 0.2s;
+}
+
+.collection-detail__delete-btn:hover {
+  background: rgba(220, 38, 38, 0.08);
+}
+
 .collection-detail__rename {
   display: flex;
   align-items: center;

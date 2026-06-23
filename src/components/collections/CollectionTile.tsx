@@ -4,20 +4,40 @@ import './CollectionGrid.css'
 
 type CollectionTileProps = {
   collection: CollectionSummary
+  onDelete?: (collection: CollectionSummary) => void
 }
 
-export function CollectionTile({ collection }: CollectionTileProps) {
+export function CollectionTile({ collection, onDelete }: CollectionTileProps) {
   const marketValue = Number(collection.total_market_value)
+  const to = `/collections/${collection.id}`
 
   return (
-    <Link to={`/collections/${collection.id}`} className="collection-tile">
+    <div className="collection-tile">
       <div className="collection-tile__header">
-        <h2 className="collection-tile__name">{collection.name}</h2>
-        <span className="collection-tile__value">${marketValue.toFixed(2)}</span>
+        <div className="collection-tile__name-row">
+          <Link to={to} className="collection-tile__name">
+            {collection.name}
+          </Link>
+          {!collection.is_default && onDelete && (
+            <button
+              type="button"
+              className="collection-tile__delete-btn"
+              aria-label="Delete collection"
+              onClick={() => onDelete(collection)}
+            >
+              <svg viewBox="0 0 16 16" width="16" height="16" aria-hidden="true" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M2 4h12M5.5 4V2.5h5V4M6 7v4.5M10 7v4.5M3 4l.75 9h8.5L13 4" />
+              </svg>
+            </button>
+          )}
+        </div>
+        <Link to={to} className="collection-tile__value">
+          ${marketValue.toFixed(2)}
+        </Link>
       </div>
-      <p className="collection-tile__count">
+      <Link to={to} className="collection-tile__count">
         {collection.card_count} {collection.card_count === 1 ? 'card' : 'cards'}
-      </p>
-    </Link>
+      </Link>
+    </div>
   )
 }

@@ -6,9 +6,10 @@ type CollectionGridProps = {
   collections: CollectionSummary[]
   loading?: boolean
   onNewCollection?: () => void
+  onDelete?: (collection: CollectionSummary) => void
 }
 
-export function CollectionGrid({ collections, loading, onNewCollection }: CollectionGridProps) {
+export function CollectionGrid({ collections, loading, onNewCollection, onDelete }: CollectionGridProps) {
   if (loading) {
     return (
       <div className="collection-grid collection-grid--loading" aria-busy="true">
@@ -22,7 +23,7 @@ export function CollectionGrid({ collections, loading, onNewCollection }: Collec
   return (
     <div className="collection-grid">
       {collections.map((collection) => (
-        <CollectionTile key={collection.id} collection={collection} />
+        <CollectionTile key={collection.id} collection={collection} onDelete={onDelete} />
       ))}
       {onNewCollection && (
         <button className="collection-tile collection-tile--new" onClick={onNewCollection}>
