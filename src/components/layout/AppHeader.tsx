@@ -8,6 +8,44 @@ type AppHeaderProps = {
   onSearchSubmit?: (query: string) => void
 }
 
+type HeaderSearchFormProps = {
+  initialQuery: string
+  onSearchSubmit?: (query: string) => void
+}
+
+function HeaderSearchForm({ initialQuery, onSearchSubmit }: HeaderSearchFormProps) {
+  const [query, setQuery] = useState(initialQuery)
+
+  function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
+    event.preventDefault()
+    onSearchSubmit?.(query.trim())
+  }
+
+  return (
+    <form className="app-header__search" onSubmit={handleSubmit}>
+      <input
+        type="search"
+        name="search"
+        value={query}
+        onChange={(e) => setQuery(e.target.value)}
+        placeholder="Search cards by name..."
+        aria-label="Search cards"
+      />
+      <button
+        type="submit"
+        className="app-header__search-btn"
+        disabled={!query.trim()}
+        aria-label="Search"
+      >
+        <svg viewBox="0 0 16 16" width="20" height="20" aria-hidden="true" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+          <circle cx="6.5" cy="6.5" r="4" />
+          <path d="M10 10l3.5 3.5" />
+        </svg>
+      </button>
+    </form>
+  )
+}
+
 export function AppHeader({ searchQuery = '', onSearchSubmit }: AppHeaderProps) {
   const { user, loading, logout, openAuthModal } = useAuth()
   const [menuOpen, setMenuOpen] = useState(false)
@@ -31,30 +69,17 @@ export function AppHeader({ searchQuery = '', onSearchSubmit }: AppHeaderProps) 
     }
   }, [menuOpen])
 
-  function handleSearchSubmit(event: React.FormEvent<HTMLFormElement>) {
-    event.preventDefault()
-    const formData = new FormData(event.currentTarget)
-    const query = String(formData.get('search') ?? '').trim()
-    onSearchSubmit?.(query)
-  }
-
   return (
     <header className="app-header">
       <Link to="/" className="app-header__logo">
         Poke Chaser
       </Link>
 
-      <form className="app-header__search" onSubmit={handleSearchSubmit}>
-        <input
-          type="search"
-          name="search"
-          defaultValue={searchQuery}
-          key={searchQuery}
-          placeholder="Search cards by name..."
-          aria-label="Search cards"
-        />
-        <button type="submit">Search</button>
-      </form>
+      <HeaderSearchForm
+        key={searchQuery}
+        initialQuery={searchQuery}
+        onSearchSubmit={onSearchSubmit}
+      />
 
       <nav className="app-header__auth" aria-label="Account">
         {loading ? null : user ? (
