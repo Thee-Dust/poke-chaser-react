@@ -116,7 +116,7 @@
   color: #dc2626;
 }
 
-@media (prefers-color-scheme: dark) {
+[data-theme="dark"] {
   .collection-detail__gain-loss--positive {
     color: #4ade80;
   }

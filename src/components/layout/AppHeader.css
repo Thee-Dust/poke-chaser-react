@@ -77,6 +77,47 @@
   border-color: var(--accent-border);
 }
 
+.app-header__theme-btn {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  width: 38px;
+  height: 38px;
+  padding: 0;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  background: transparent;
+  color: var(--text-h);
+  cursor: pointer;
+  transition: border-color 0.2s, color 0.2s, background 0.2s;
+}
+
+.app-header__theme-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.app-header__theme-icon--hover {
+  display: none;
+}
+
+.app-header__theme-btn:hover {
+  border-color: var(--accent-border);
+  color: var(--accent);
+  background: var(--accent-bg);
+}
+
+.app-header__theme-btn:hover .app-header__theme-icon--current {
+  display: none;
+}
+
+.app-header__theme-btn:hover .app-header__theme-icon--hover {
+  display: inline-flex;
+}
+
 .app-header__auth {
   display: flex;
   align-items: center;

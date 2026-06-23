@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import { Link, NavLink } from 'react-router-dom'
 import { useAuth } from '../../context/AuthContext'
+import { useTheme } from '../../context/ThemeContext'
 import './AppHeader.css'
 
 type AppHeaderProps = {
@@ -46,8 +47,26 @@ function HeaderSearchForm({ initialQuery, onSearchSubmit }: HeaderSearchFormProp
   )
 }
 
+function SunIcon() {
+  return (
+    <svg viewBox="0 0 16 16" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+      <circle cx="8" cy="8" r="3" />
+      <path d="M8 1v1.5M8 13.5V15M1 8h1.5M13.5 8H15M2.9 2.9l1.1 1.1M12 12l1.1 1.1M2.9 13.1l1.1-1.1M12 4l1.1-1.1" />
+    </svg>
+  )
+}
+
+function MoonIcon() {
+  return (
+    <svg viewBox="0 0 16 16" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M14 9.2A6.5 6.5 0 0 1 6.8 2 6.5 6.5 0 1 0 14 9.2Z" />
+    </svg>
+  )
+}
+
 export function AppHeader({ searchQuery = '', onSearchSubmit }: AppHeaderProps) {
   const { user, loading, logout, openAuthModal } = useAuth()
+  const { theme, toggleTheme } = useTheme()
   const [menuOpen, setMenuOpen] = useState(false)
   const menuRef = useRef<HTMLDivElement>(null)
 
@@ -80,6 +99,21 @@ export function AppHeader({ searchQuery = '', onSearchSubmit }: AppHeaderProps) 
         initialQuery={searchQuery}
         onSearchSubmit={onSearchSubmit}
       />
+
+      <button
+        type="button"
+        className="app-header__theme-btn"
+        onClick={toggleTheme}
+        aria-label={theme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'}
+        title={theme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'}
+      >
+        <span className="app-header__theme-icon app-header__theme-icon--current" aria-hidden="true">
+          {theme === 'dark' ? <MoonIcon /> : <SunIcon />}
+        </span>
+        <span className="app-header__theme-icon app-header__theme-icon--hover" aria-hidden="true">
+          {theme === 'dark' ? <SunIcon /> : <MoonIcon />}
+        </span>
+      </button>
 
       <nav className="app-header__auth" aria-label="Account">
         {loading ? null : user ? (
