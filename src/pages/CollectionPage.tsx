@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import { Navigate, useNavigate, useParams } from 'react-router-dom'
-import type { Card, CollectionDetail } from '../api/types'
+import type { Card, CollectionDetail, CollectionItem } from '../api/types'
 import { CardGrid } from '../components/cards/CardGrid'
 import { DeleteCollectionModal } from '../components/collections/DeleteCollectionModal'
 import { Breadcrumb } from '../components/layout/Breadcrumb'
@@ -17,15 +17,19 @@ const CARD_SORT_OPTIONS = [
 
 type SortValue = typeof CARD_SORT_OPTIONS[number]['value']
 
-function sortCards(cards: Card[], sort: SortValue): Card[] {
-  return [...cards].sort((a, b) => {
+function sortItems(items: CollectionItem[], sort: SortValue): CollectionItem[] {
+  return [...items].sort((a, b) => {
+    const ac = a.card
+    const bc = b.card
     switch (sort) {
-      case 'name_asc': return (a.name ?? '').localeCompare(b.name ?? '')
-      case 'name_desc': return (b.name ?? '').localeCompare(a.name ?? '')
+      case 'name_asc': return (ac.name ?? '').localeCompare(bc.name ?? '')
+      case 'name_desc': return (bc.name ?? '').localeCompare(ac.name ?? '')
       case 'price_desc':
       case 'price_asc': {
-        const priceOf = (c: Card) => {
-          const prices = c.tcgplayer?.prices
+        const priceOf = (item: CollectionItem) => {
+          const v = item.market_value
+          if (v != null) return Number(v)
+          const prices = item.card.tcgplayer?.prices
           if (!prices) return -1
           const markets = Object.values(prices)
             .map((p) => p?.market)
@@ -42,7 +46,7 @@ function sortCards(cards: Card[], sort: SortValue): Card[] {
           const n = parseInt(c.number ?? '', 10)
           return isNaN(n) ? Infinity : n
         }
-        return num(a) - num(b)
+        return num(ac) - num(bc)
       }
     }
   })
@@ -153,9 +157,9 @@ export function CollectionPage() {
     return <Navigate to="/collections" replace />
   }
 
-  const rawCards = detail?.items.map((item) => item.card) ?? []
-  const cards = sortCards(rawCards, sort)
+  const sortedItems = sortItems(detail?.items ?? [], sort)
   const marketValue = detail ? Number(detail.total_market_value) : 0
+  const purchasedMarketValue = detail ? Number(detail.purchased_market_value) : 0
   const totalSpent = detail ? Number(detail.total_spent) : 0
   const gainLoss = detail ? Number(detail.gain_loss) : 0
   const gainLossClass =
@@ -234,14 +238,21 @@ export function CollectionPage() {
       {error && <p className="page__error">{error}</p>}
 
       {detail && (
+        <div className="collection-detail__market-value">
+          <span className="collection-detail__market-value-label">Market Value</span>
+          <span className="collection-detail__market-value-amount">${marketValue.toFixed(2)}</span>
+        </div>
+      )}
+
+      {detail && (
         <div className="collection-detail__summary">
           <div className="collection-detail__summary-stat">
             <span className="collection-detail__summary-label">Cards</span>
             <span className="collection-detail__summary-value">{detail.card_count}</span>
           </div>
           <div className="collection-detail__summary-stat">
-            <span className="collection-detail__summary-label">Market Value</span>
-            <span className="collection-detail__summary-value">${marketValue.toFixed(2)}</span>
+            <span className="collection-detail__summary-label">Purchased Market Value</span>
+            <span className="collection-detail__summary-value">${purchasedMarketValue.toFixed(2)}</span>
           </div>
           <div className="collection-detail__summary-stat">
             <span className="collection-detail__summary-label">Total Spent</span>
@@ -278,7 +289,7 @@ export function CollectionPage() {
         </div>
       )}
 
-      <CardGrid cards={cards} loading={loading} showSetName />
+      <CardGrid items={sortedItems} loading={loading} showSetName />
 
       {deleteModalOpen && detail && (
         <DeleteCollectionModal
