@@ -81,11 +81,11 @@ async function createCollection(name: string): Promise<CollectionSummary> {
   return { ...json, card_count: 0, total_market_value: '0.00' }
 }
 
-async function addCardToCollection(collectionId: number, cardId: string): Promise<void> {
+async function addCardToCollection(collectionId: number, cardId: string, quantity = 1): Promise<void> {
   await ensureCsrf()
   await fetchJson(getUrl(`collections/${collectionId}/items/`), {
     method: 'POST',
-    body: JSON.stringify({ card_id: cardId }),
+    body: JSON.stringify({ card_id: cardId, quantity }),
   })
 }
 

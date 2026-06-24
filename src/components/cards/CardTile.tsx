@@ -1,10 +1,14 @@
 import { Link } from 'react-router-dom'
 import type { Card } from '../../api/types'
+import { useAuth } from '../../context/AuthContext'
 import './CardGrid.css'
 
 type CardTileProps = {
   card: Card
   showSetName?: boolean
+  onAdd?: (card: Card) => void
+  marketValue?: string | null
+  quantity?: number
 }
 
 function topMarketPrice(card: Card): number | undefined {
@@ -16,31 +20,62 @@ function topMarketPrice(card: Card): number | undefined {
   return markets.length ? Math.max(...markets) : undefined
 }
 
-export function CardTile({ card, showSetName = false }: CardTileProps) {
+export function CardTile({ card, showSetName = false, onAdd, marketValue, quantity }: CardTileProps) {
   const image = card.images?.small ?? card.images?.large
-  const price = topMarketPrice(card)
+  const price = marketValue == null ? topMarketPrice(card) : undefined
+  const { user } = useAuth()
 
   return (
-    <Link to={`/cards/${card.id}`} className="card-tile">
-      <div className="card-tile__image-wrap">
-        {image ? (
-          <img src={image} alt={card.name} className="card-tile__image" loading="lazy" />
-        ) : (
-          <div className="card-tile__placeholder" aria-hidden="true" />
-        )}
+    <div className="card-tile">
+      <Link
+        to={`/cards/${card.id}`}
+        className="card-tile__link"
+        aria-label={`View ${card.name}`}
+      />
+      <div className="card-tile__content">
+        <div className="card-tile__image-wrap">
+          {image ? (
+            <img src={image} alt={card.name} className="card-tile__image" loading="lazy" />
+          ) : (
+            <div className="card-tile__placeholder" aria-hidden="true" />
+          )}
+        </div>
+        <div className="card-tile__body">
+          <h2 className="card-tile__name">{card.name}</h2>
+          {showSetName && card.set_name && (
+            <p className="card-tile__set">{card.set_name}</p>
+          )}
+          <p className="card-tile__meta">
+            {[card.number, card.rarity].filter(Boolean).join(' · ')}
+          </p>
+          <div className="card-tile__footer">
+            <div className="card-tile__price-group">
+              {marketValue != null ? (
+                <p className="card-tile__price">${Number(marketValue).toFixed(2)}</p>
+              ) : price !== undefined ? (
+                <p className="card-tile__price">${price.toFixed(2)}</p>
+              ) : null}
+              {quantity != null && (
+                <span className="card-tile__quantity">Qty {quantity}</span>
+              )}
+            </div>
+            {onAdd && user && (
+              <button
+                type="button"
+                className="card-tile__add-btn"
+                aria-label={`Add ${card.name} to collection`}
+                onClick={(e) => {
+                  e.stopPropagation()
+                  e.preventDefault()
+                  onAdd(card)
+                }}
+              >
+                +
+              </button>
+            )}
+          </div>
+        </div>
       </div>
-      <div className="card-tile__body">
-        <h2 className="card-tile__name">{card.name}</h2>
-        {showSetName && card.set_name && (
-          <p className="card-tile__set">{card.set_name}</p>
-        )}
-        <p className="card-tile__meta">
-          {[card.number, card.rarity].filter(Boolean).join(' · ')}
-        </p>
-        {price !== undefined && (
-          <p className="card-tile__price">${price.toFixed(2)}</p>
-        )}
-      </div>
-    </Link>
+    </div>
   )
 }

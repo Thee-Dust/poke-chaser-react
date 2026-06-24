@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { useParams } from 'react-router-dom'
 import type { Card, Set } from '../api/types'
 import { CardGrid } from '../components/cards/CardGrid'
+import { AddToCollectionModal } from '../components/collections/AddToCollectionModal'
 import { Breadcrumb } from '../components/layout/Breadcrumb'
 import { Pagination } from '../components/ui/Pagination'
 import { useData } from '../providers/DataProviderContext'
@@ -25,6 +26,7 @@ export function SetDetailPage() {
   const [loadingSet, setLoadingSet] = useState(true)
   const [loadingCards, setLoadingCards] = useState(true)
   const [error, setError] = useState<string | null>(null)
+  const [addCard, setAddCard] = useState<Card | null>(null)
 
   useEffect(() => {
     let cancelled = false
@@ -144,8 +146,20 @@ export function SetDetailPage() {
         </label>
       </div>
 
-      <CardGrid cards={cards} loading={loadingCards} />
+      <CardGrid
+        cards={cards}
+        loading={loadingCards}
+        onAddToCollection={(card) => setAddCard(card)}
+      />
       <Pagination page={page} pages={pages} onPageChange={setPage} />
+
+      {addCard && (
+        <AddToCollectionModal
+          cardId={addCard.id}
+          cardName={addCard.name}
+          onClose={() => setAddCard(null)}
+        />
+      )}
     </div>
   )
 }

@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { Link, useSearchParams } from 'react-router-dom'
 import type { Card } from '../api/types'
 import { CardGrid } from '../components/cards/CardGrid'
+import { AddToCollectionModal } from '../components/collections/AddToCollectionModal'
 import { Pagination } from '../components/ui/Pagination'
 import { useData } from '../providers/DataProviderContext'
 
@@ -22,6 +23,7 @@ export function SearchPage() {
   const [sort, setSort] = useState<string>('price_desc')
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [addCard, setAddCard] = useState<Card | null>(null)
 
   useEffect(() => {
     setPage(1)
@@ -98,8 +100,23 @@ export function SearchPage() {
       )}
 
       {error && <p className="page__error">{error}</p>}
-      {query && <CardGrid cards={cards} loading={loading} showSetName />}
+      {query && (
+        <CardGrid
+          cards={cards}
+          loading={loading}
+          showSetName
+          onAddToCollection={(card) => setAddCard(card)}
+        />
+      )}
       <Pagination page={page} pages={pages} onPageChange={setPage} />
+
+      {addCard && (
+        <AddToCollectionModal
+          cardId={addCard.id}
+          cardName={addCard.name}
+          onClose={() => setAddCard(null)}
+        />
+      )}
     </div>
   )
 }
