@@ -67,8 +67,10 @@ async function getCollections(): Promise<CollectionSummary[]> {
   return Array.isArray(json) ? json : []
 }
 
-async function getCollection(id: number): Promise<CollectionDetail | undefined> {
-  const { json } = await fetchJson<CollectionDetail>(getUrl(`collections/${id}/`))
+async function getCollection(id: number, sort = 'number_asc'): Promise<CollectionDetail | undefined> {
+  const params = new URLSearchParams()
+  params.set('sort', sort)
+  const { json } = await fetchJson<CollectionDetail>(getUrl(`collections/${id}/?${params.toString()}`))
   return json
 }
 

@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import { Navigate, useNavigate, useParams } from 'react-router-dom'
-import type { Card, CollectionDetail, CollectionItem } from '../api/types'
+import type { CollectionDetail } from '../api/types'
 import { CardGrid } from '../components/cards/CardGrid'
 import { DeleteCollectionModal } from '../components/collections/DeleteCollectionModal'
 import { Breadcrumb } from '../components/layout/Breadcrumb'
@@ -8,7 +8,6 @@ import { useData } from '../providers/DataProviderContext'
 import './CollectionPage.css'
 
 const CARD_SORT_OPTIONS = [
-  { value: 'number_asc', label: 'Default' },
   { value: 'price_desc', label: 'Price: High to Low' },
   { value: 'price_asc', label: 'Price: Low to High' },
   { value: 'name_asc', label: 'A–Z' },
@@ -16,41 +15,6 @@ const CARD_SORT_OPTIONS = [
 ] as const
 
 type SortValue = typeof CARD_SORT_OPTIONS[number]['value']
-
-function sortItems(items: CollectionItem[], sort: SortValue): CollectionItem[] {
-  return [...items].sort((a, b) => {
-    const ac = a.card
-    const bc = b.card
-    switch (sort) {
-      case 'name_asc': return (ac.name ?? '').localeCompare(bc.name ?? '')
-      case 'name_desc': return (bc.name ?? '').localeCompare(ac.name ?? '')
-      case 'price_desc':
-      case 'price_asc': {
-        const priceOf = (item: CollectionItem) => {
-          const v = item.market_value
-          if (v != null) return Number(v)
-          const prices = item.card.tcgplayer?.prices
-          if (!prices) return -1
-          const markets = Object.values(prices)
-            .map((p) => p?.market)
-            .filter((m): m is number => typeof m === 'number')
-          return markets.length ? Math.max(...markets) : -1
-        }
-        return sort === 'price_desc'
-          ? priceOf(b) - priceOf(a)
-          : priceOf(a) - priceOf(b)
-      }
-      case 'number_asc':
-      default: {
-        const num = (c: Card) => {
-          const n = parseInt(c.number ?? '', 10)
-          return isNaN(n) ? Infinity : n
-        }
-        return num(ac) - num(bc)
-      }
-    }
-  })
-}
 
 export function CollectionPage() {
   const { collectionId } = useParams<{ collectionId: string }>()
@@ -61,7 +25,7 @@ export function CollectionPage() {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
 
-  const [sort, setSort] = useState<SortValue>('number_asc')
+  const [sort, setSort] = useState<SortValue>('price_desc')
 
   const [editing, setEditing] = useState(false)
   const [editName, setEditName] = useState('')
@@ -84,7 +48,7 @@ export function CollectionPage() {
       setDetail(null)
 
       try {
-        const d = await data.getCollection(activeId)
+        const d = await data.getCollection(activeId, sort)
         if (!cancelled) {
           setDetail(d ?? null)
         }
@@ -104,7 +68,7 @@ export function CollectionPage() {
     return () => {
       cancelled = true
     }
-  }, [data, activeId, invalidId])
+  }, [data, activeId, invalidId, sort])
 
   useEffect(() => {
     if (editing) {
@@ -157,7 +121,7 @@ export function CollectionPage() {
     return <Navigate to="/collections" replace />
   }
 
-  const sortedItems = sortItems(detail?.items ?? [], sort)
+  const sortedItems = detail?.items ?? []
   const marketValue = detail ? Number(detail.total_market_value) : 0
   const purchasedMarketValue = detail ? Number(detail.purchased_market_value) : 0
   const totalSpent = detail ? Number(detail.total_spent) : 0
@@ -271,7 +235,7 @@ export function CollectionPage() {
         <p className="page__message">Collection not found.</p>
       )}
 
-      {detail && (
+      {detail && sortedItems.length > 0 && (
         <div className="page__header">
           <span />
           <label className="page__sort">
@@ -289,7 +253,16 @@ export function CollectionPage() {
         </div>
       )}
 
-      <CardGrid items={sortedItems} loading={loading} showSetName />
+      {!loading && detail && sortedItems.length === 0 ? (
+        <div className="collection-detail__empty">
+          <p className="collection-detail__empty-title">No cards in this collection yet</p>
+          <p className="collection-detail__empty-text">
+            Search for cards and add them with the + button on any card.
+          </p>
+        </div>
+      ) : (
+        <CardGrid items={sortedItems} loading={loading} showSetName />
+      )}
 
       {deleteModalOpen && detail && (
         <DeleteCollectionModal
