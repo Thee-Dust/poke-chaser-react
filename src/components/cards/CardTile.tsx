@@ -7,6 +7,7 @@ type CardTileProps = {
   card: Card
   showSetName?: boolean
   onAdd?: (card: Card) => void
+  onHistory?: () => void
   marketValue?: string | null
   quantity?: number
 }
@@ -20,7 +21,7 @@ function topMarketPrice(card: Card): number | undefined {
   return markets.length ? Math.max(...markets) : undefined
 }
 
-export function CardTile({ card, showSetName = false, onAdd, marketValue, quantity }: CardTileProps) {
+export function CardTile({ card, showSetName = false, onAdd, onHistory, marketValue, quantity }: CardTileProps) {
   const image = card.images?.small ?? card.images?.large
   const price = marketValue == null ? topMarketPrice(card) : undefined
   const { user } = useAuth()
@@ -59,6 +60,23 @@ export function CardTile({ card, showSetName = false, onAdd, marketValue, quanti
                 <span className="card-tile__quantity">Qty {quantity}</span>
               )}
             </div>
+            {onHistory && (
+              <button
+                type="button"
+                className="card-tile__history-btn"
+                aria-label={`Purchase history for ${card.name}`}
+                onClick={(e) => {
+                  e.stopPropagation()
+                  e.preventDefault()
+                  onHistory()
+                }}
+              >
+                <svg viewBox="0 0 16 16" width="13" height="13" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                  <circle cx="8" cy="8" r="6.5" />
+                  <path d="M8 4.5V8l2.5 1.5" />
+                </svg>
+              </button>
+            )}
             {onAdd && user && (
               <button
                 type="button"

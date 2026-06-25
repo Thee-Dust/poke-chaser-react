@@ -1,8 +1,9 @@
 import { useEffect, useRef, useState } from 'react'
 import { Navigate, useNavigate, useParams } from 'react-router-dom'
-import type { CollectionDetail } from '../api/types'
+import type { CollectionDetail, CollectionItem } from '../api/types'
 import { CardGrid } from '../components/cards/CardGrid'
 import { DeleteCollectionModal } from '../components/collections/DeleteCollectionModal'
+import { PurchaseHistoryModal } from '../components/collections/PurchaseHistoryModal'
 import { Breadcrumb } from '../components/layout/Breadcrumb'
 import { useData } from '../providers/DataProviderContext'
 import './CollectionPage.css'
@@ -32,6 +33,8 @@ export function CollectionPage() {
   const [saving, setSaving] = useState(false)
   const [saveError, setSaveError] = useState<string | null>(null)
   const [deleteModalOpen, setDeleteModalOpen] = useState(false)
+  const [historyItem, setHistoryItem] = useState<CollectionItem | null>(null)
+  const [refresh, setRefresh] = useState(0)
   const inputRef = useRef<HTMLInputElement>(null)
 
   const activeId = Number(collectionId)
@@ -68,7 +71,7 @@ export function CollectionPage() {
     return () => {
       cancelled = true
     }
-  }, [data, activeId, invalidId, sort])
+  }, [data, activeId, invalidId, sort, refresh])
 
   useEffect(() => {
     if (editing) {
@@ -261,7 +264,7 @@ export function CollectionPage() {
           </p>
         </div>
       ) : (
-        <CardGrid items={sortedItems} loading={loading} showSetName />
+        <CardGrid items={sortedItems} loading={loading} showSetName onHistory={setHistoryItem} />
       )}
 
       {deleteModalOpen && detail && (
@@ -269,6 +272,22 @@ export function CollectionPage() {
           collectionName={detail.name}
           onConfirm={handleDeleteConfirm}
           onClose={() => setDeleteModalOpen(false)}
+        />
+      )}
+
+      {historyItem && detail && (
+        <PurchaseHistoryModal
+          collectionId={detail.id}
+          itemId={historyItem.id}
+          cardName={historyItem.card.name}
+          purchases={historyItem.purchases}
+          quantity={historyItem.quantity ?? 1}
+          marketPrice={historyItem.market_price ?? null}
+          onClose={() => setHistoryItem(null)}
+          onMutated={() => {
+            setHistoryItem(null)
+            setRefresh((n) => n + 1)
+          }}
         />
       )}
     </div>

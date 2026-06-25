@@ -1,4 +1,4 @@
-import type { Card, CollectionDetail, CollectionSummary, Set } from '../api/types'
+import type { Card, CollectionDetail, CollectionPurchase, CollectionSummary, Set } from '../api/types'
 import { ensureCsrf, fetchJson, getUrl } from '../utils/api'
 
 async function getSets(page = 1, sort = 'release_date_desc') {
@@ -91,6 +91,32 @@ async function addCardToCollection(collectionId: number, cardId: string, quantit
   })
 }
 
+async function addPurchase(
+  collectionId: number,
+  itemId: number,
+  purchasePrice: string,
+  acquiredDate: string,
+): Promise<CollectionPurchase> {
+  await ensureCsrf()
+  const { json } = await fetchJson<CollectionPurchase>(
+    getUrl(`collections/${collectionId}/items/${itemId}/purchases/`),
+    { method: 'POST', body: JSON.stringify({ purchase_price: purchasePrice, acquired_date: acquiredDate }) },
+  )
+  return json
+}
+
+async function deletePurchase(
+  collectionId: number,
+  itemId: number,
+  purchaseId: number,
+): Promise<void> {
+  await ensureCsrf()
+  await fetchJson(
+    getUrl(`collections/${collectionId}/items/${itemId}/purchases/${purchaseId}/`),
+    { method: 'DELETE' },
+  )
+}
+
 async function deleteCollection(id: number): Promise<void> {
   await ensureCsrf()
   await fetchJson(getUrl(`collections/${id}/`), { method: 'DELETE' })
@@ -115,6 +141,8 @@ export const dataProvider = {
   getCollection,
   createCollection,
   addCardToCollection,
+  addPurchase,
+  deletePurchase,
   updateCollection,
   deleteCollection,
 }

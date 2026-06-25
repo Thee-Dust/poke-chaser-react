@@ -1,13 +1,6 @@
-import type { Card } from '../../api/types'
+import type { Card, CollectionItem } from '../../api/types'
 import { CardTile } from './CardTile'
 import './CardGrid.css'
-
-type CollectionItem = {
-  card: Card
-  market_price?: string | null
-  market_value: string | null
-  quantity?: number
-}
 
 type CardGridProps = {
   cards?: Card[]
@@ -15,9 +8,10 @@ type CardGridProps = {
   loading?: boolean
   showSetName?: boolean
   onAddToCollection?: (card: Card) => void
+  onHistory?: (item: CollectionItem) => void
 }
 
-export function CardGrid({ cards, items, loading, showSetName = false, onAddToCollection }: CardGridProps) {
+export function CardGrid({ cards, items, loading, showSetName = false, onAddToCollection, onHistory }: CardGridProps) {
   const isEmpty = items ? items.length === 0 : (cards ?? []).length === 0
 
   if (loading) {
@@ -45,6 +39,7 @@ export function CardGrid({ cards, items, loading, showSetName = false, onAddToCo
             marketValue={item.market_price ?? null}
             quantity={item.quantity}
             onAdd={onAddToCollection}
+            onHistory={onHistory ? () => onHistory(item) : undefined}
           />
         ))}
       </div>
