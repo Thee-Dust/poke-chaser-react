@@ -1,0 +1,98 @@
+.binder-sidebar {
+  flex-shrink: 0;
+  width: 220px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  align-self: flex-start;
+  position: sticky;
+  top: 16px;
+}
+
+.binder-sidebar__section {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.binder-sidebar__section-title {
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--text);
+  margin: 0;
+}
+
+.binder-sidebar__select,
+.binder-sidebar__search-input {
+  width: 100%;
+  padding: 7px 10px;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  background: var(--bg);
+  color: var(--text-h);
+  font: inherit;
+  font-size: 13px;
+  outline: none;
+  box-sizing: border-box;
+  transition: border-color 0.15s;
+}
+
+.binder-sidebar__select:focus,
+.binder-sidebar__search-input:focus {
+  border-color: var(--accent);
+}
+
+/* Card thumbnail grid */
+.binder-sidebar__thumbs {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 6px;
+  max-height: 340px;
+  overflow-y: auto;
+  overflow-x: hidden;
+}
+
+.binder-sidebar__thumb {
+  aspect-ratio: 2.5 / 3.5;
+  border-radius: 4px;
+  overflow: hidden;
+  border: 1px solid var(--border);
+  cursor: grab;
+  transition: border-color 0.15s, box-shadow 0.15s;
+}
+
+.binder-sidebar__thumb:hover {
+  border-color: var(--accent-border);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.12);
+}
+
+.binder-sidebar__thumb:active {
+  cursor: grabbing;
+}
+
+.binder-sidebar__thumb img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+  pointer-events: none;
+  user-select: none;
+}
+
+/* Dragging state — faint image */
+.binder-sidebar__thumb--dragging {
+  opacity: 0.4;
+}
+
+.binder-sidebar__empty {
+  font-size: 13px;
+  color: var(--text);
+  line-height: 1.4;
+}
+
+.binder-sidebar__loading {
+  font-size: 13px;
+  color: var(--text);
+}

@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { Navigate, useParams } from 'react-router-dom'
 import type { BinderDetail, BinderPageData } from '../api/types'
+import { BinderSidebar } from '../components/binders/BinderSidebar'
 import { BinderSpread } from '../components/binders/BinderSpread'
 import { Breadcrumb } from '../components/layout/Breadcrumb'
 import { useData } from '../providers/DataProviderContext'
@@ -150,23 +151,26 @@ export function BinderBuilderPage() {
       </div>
 
       <div className="binder-builder__workspace">
-        <BinderSpread
-          binderName={binder.name}
-          leftPage={left}
-          rightPage={right}
-          rows={binder.rows}
-          cols={binder.cols}
-        />
-        <button
-          type="button"
-          className="binder-builder__add-page"
-          onClick={() => void handleAddPage()}
-          disabled={addingPage}
-          aria-label="Add page"
-          title="Add page"
-        >
-          +
-        </button>
+        <div className="binder-builder__spread-wrap">
+          <BinderSpread
+            binderName={binder.name}
+            leftPage={left}
+            rightPage={right}
+            rows={binder.rows}
+            cols={binder.cols}
+          />
+          <button
+            type="button"
+            className="binder-builder__add-page"
+            onClick={() => void handleAddPage()}
+            disabled={addingPage}
+            aria-label="Add page"
+            title="Add page"
+          >
+            +
+          </button>
+        </div>
+        <BinderSidebar />
       </div>
     </div>
   )
