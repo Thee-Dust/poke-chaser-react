@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { Navigate, useParams } from 'react-router-dom'
 import type { BinderDetail, BinderPageData, BinderSlotData } from '../api/types'
 import { BinderSidebar } from '../components/binders/BinderSidebar'
@@ -38,11 +38,23 @@ export function BinderBuilderPage() {
   const { binderId } = useParams<{ binderId: string }>()
   const data = useData()
 
+  // Data
   const [binder, setBinder] = useState<BinderDetail | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
+
+  // Navigation
   const [currentSpread, setCurrentSpread] = useState(0)
   const [addingPage, setAddingPage] = useState(false)
+
+  // Binder name editing
+  const [editingName, setEditingName] = useState(false)
+  const [editNameValue, setEditNameValue] = useState('')
+  const [savingName, setSavingName] = useState(false)
+  const nameInputRef = useRef<HTMLInputElement>(null)
+
+  // Sidebar (mobile)
+  const [sidebarOpen, setSidebarOpen] = useState(false)
 
   const activeId = Number(binderId)
   const invalidId = !binderId || isNaN(activeId)
@@ -71,6 +83,41 @@ export function BinderBuilderPage() {
     }
   }, [data, activeId, invalidId])
 
+  useEffect(() => {
+    if (editingName) {
+      nameInputRef.current?.focus()
+      nameInputRef.current?.select()
+    }
+  }, [editingName])
+
+  // ---- Binder name ----
+
+  function startEditingName() {
+    setEditNameValue(binder?.name ?? '')
+    setEditingName(true)
+  }
+
+  async function handleSaveName() {
+    const trimmed = editNameValue.trim()
+    if (!trimmed || !binder) { setEditingName(false); return }
+    if (trimmed === binder.name) { setEditingName(false); return }
+    setSavingName(true)
+    try {
+      await data.updateBinder(binder.id, trimmed)
+      setBinder((prev) => (prev ? { ...prev, name: trimmed } : prev))
+      setEditingName(false)
+    } finally {
+      setSavingName(false)
+    }
+  }
+
+  function handleNameKeyDown(e: React.KeyboardEvent<HTMLInputElement>) {
+    if (e.key === 'Enter') void handleSaveName()
+    if (e.key === 'Escape') setEditingName(false)
+  }
+
+  // ---- Slot handlers ----
+
   function handleSlotUpdated(pageId: number, position: number, slot: BinderSlotData) {
     setBinder((prev) => {
       if (!prev) return prev
@@ -98,6 +145,18 @@ export function BinderBuilderPage() {
     })
   }
 
+  function handlePageRenamed(pageId: number, name: string) {
+    setBinder((prev) => {
+      if (!prev) return prev
+      return {
+        ...prev,
+        pages: prev.pages.map((p) => (p.id === pageId ? { ...p, name } : p)),
+      }
+    })
+  }
+
+  // ---- Add page ----
+
   async function handleAddPage() {
     if (!binder || addingPage) return
     setAddingPage(true)
@@ -110,6 +169,8 @@ export function BinderBuilderPage() {
       setAddingPage(false)
     }
   }
+
+  // ---- Guards ----
 
   if (invalidId) return <Navigate to="/binders" replace />
 
@@ -138,40 +199,72 @@ export function BinderBuilderPage() {
     <div className="binder-builder">
       <div className="binder-builder__header">
         <Breadcrumb items={[{ label: 'Binders', to: '/binders' }, { label: binder.name }]} />
+
         <div className="binder-builder__title-row">
-          <h1 className="binder-builder__title">{binder.name}</h1>
-          <div className="binder-builder__nav">
-            <button
-              type="button"
-              className="btn binder-builder__nav-btn"
-              onClick={() => setCurrentSpread((s) => Math.max(0, s - 1))}
-              disabled={clampedSpread === 0}
-              aria-label="Previous spread"
+          {editingName ? (
+            <input
+              ref={nameInputRef}
+              className="binder-builder__name-input"
+              value={editNameValue}
+              onChange={(e) => setEditNameValue(e.target.value)}
+              onBlur={() => void handleSaveName()}
+              onKeyDown={handleNameKeyDown}
+              disabled={savingName}
+              aria-label="Binder name"
+            />
+          ) : (
+            <h1
+              className="binder-builder__title"
+              onDoubleClick={startEditingName}
+              title="Double-click to rename"
             >
-              ‹
-            </button>
-            <label className="binder-builder__jump-label">
-              <span className="binder-builder__jump-sr">Jump to</span>
-              <select
-                className="binder-builder__jump-select"
-                value={clampedSpread}
-                onChange={(e) => setCurrentSpread(Number(e.target.value))}
+              {binder.name}
+            </h1>
+          )}
+
+          <div className="binder-builder__controls">
+            <div className="binder-builder__nav">
+              <button
+                type="button"
+                className="btn binder-builder__nav-btn"
+                onClick={() => setCurrentSpread((s) => Math.max(0, s - 1))}
+                disabled={clampedSpread === 0}
+                aria-label="Previous spread"
               >
-                {Array.from({ length: spreads }).map((_, i) => (
-                  <option key={i} value={i}>
-                    {getSpreadLabel(i, binder.pages)}
-                  </option>
-                ))}
-              </select>
-            </label>
+                ‹
+              </button>
+              <label className="binder-builder__jump-label">
+                <span className="binder-builder__jump-sr">Jump to</span>
+                <select
+                  className="binder-builder__jump-select"
+                  value={clampedSpread}
+                  onChange={(e) => setCurrentSpread(Number(e.target.value))}
+                >
+                  {Array.from({ length: spreads }).map((_, i) => (
+                    <option key={i} value={i}>
+                      {getSpreadLabel(i, binder.pages)}
+                    </option>
+                  ))}
+                </select>
+              </label>
+              <button
+                type="button"
+                className="btn binder-builder__nav-btn"
+                onClick={() => setCurrentSpread((s) => Math.min(spreads - 1, s + 1))}
+                disabled={clampedSpread >= spreads - 1}
+                aria-label="Next spread"
+              >
+                ›
+              </button>
+            </div>
+
             <button
               type="button"
-              className="btn binder-builder__nav-btn"
-              onClick={() => setCurrentSpread((s) => Math.min(spreads - 1, s + 1))}
-              disabled={clampedSpread >= spreads - 1}
-              aria-label="Next spread"
+              className="btn binder-builder__sidebar-toggle"
+              onClick={() => setSidebarOpen((o) => !o)}
+              aria-label="Toggle card panel"
             >
-              ›
+              Cards
             </button>
           </div>
         </div>
@@ -188,6 +281,7 @@ export function BinderBuilderPage() {
             cols={binder.cols}
             onSlotUpdated={handleSlotUpdated}
             onSlotCleared={handleSlotCleared}
+            onPageRenamed={handlePageRenamed}
           />
           <button
             type="button"
@@ -200,7 +294,7 @@ export function BinderBuilderPage() {
             +
           </button>
         </div>
-        <BinderSidebar />
+        <BinderSidebar isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} />
       </div>
     </div>
   )

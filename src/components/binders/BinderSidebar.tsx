@@ -125,12 +125,13 @@ function SearchSection() {
 
   useEffect(() => {
     const trimmed = query.trim()
-    if (!trimmed) {
-      setResults([])
-      return
-    }
+    const delay = trimmed ? 400 : 0
 
     const timer = setTimeout(async () => {
+      if (!trimmed) {
+        setResults([])
+        return
+      }
       setLoading(true)
       try {
         const result = await data.searchCards(trimmed)
@@ -140,7 +141,7 @@ function SearchSection() {
       } finally {
         setLoading(false)
       }
-    }, 400)
+    }, delay)
 
     return () => clearTimeout(timer)
   }, [data, query])
@@ -171,11 +172,45 @@ function SearchSection() {
   )
 }
 
-export function BinderSidebar() {
+type BinderSidebarProps = {
+  isOpen?: boolean
+  onClose?: () => void
+}
+
+export function BinderSidebar({ isOpen, onClose }: BinderSidebarProps) {
+  const className = [
+    'binder-sidebar',
+    isOpen ? 'binder-sidebar--open' : '',
+  ]
+    .filter(Boolean)
+    .join(' ')
+
   return (
-    <aside className="binder-sidebar">
-      <CollectionSection />
-      <SearchSection />
-    </aside>
+    <>
+      {isOpen && (
+        <div
+          className="binder-sidebar__backdrop"
+          onClick={onClose}
+          aria-hidden="true"
+        />
+      )}
+      <aside className={className}>
+        {onClose && (
+          <div className="binder-sidebar__mobile-header">
+            <span className="binder-sidebar__mobile-title">Cards</span>
+            <button
+              type="button"
+              className="binder-sidebar__mobile-close"
+              onClick={onClose}
+              aria-label="Close panel"
+            >
+              ✕
+            </button>
+          </div>
+        )}
+        <CollectionSection />
+        <SearchSection />
+      </aside>
+    </>
   )
 }

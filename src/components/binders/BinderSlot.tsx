@@ -46,11 +46,13 @@ function SlotPopover({ binderId, pageId, position, pos, onSlotUpdated, onClose }
 
   useEffect(() => {
     const trimmed = query.trim()
-    if (!trimmed) {
-      setResults([])
-      return
-    }
+    const delay = trimmed ? 400 : 0
+
     const timer = setTimeout(async () => {
+      if (!trimmed) {
+        setResults([])
+        return
+      }
       setLoading(true)
       try {
         const result = await data.searchCards(trimmed)
@@ -60,7 +62,8 @@ function SlotPopover({ binderId, pageId, position, pos, onSlotUpdated, onClose }
       } finally {
         setLoading(false)
       }
-    }, 400)
+    }, delay)
+
     return () => clearTimeout(timer)
   }, [data, query])
 

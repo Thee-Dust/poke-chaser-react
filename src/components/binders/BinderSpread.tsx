@@ -11,6 +11,7 @@ type BinderSpreadProps = {
   cols: number
   onSlotUpdated: (pageId: number, position: number, slot: BinderSlotData) => void
   onSlotCleared: (pageId: number, position: number) => void
+  onPageRenamed: (pageId: number, name: string) => void
 }
 
 export function BinderSpread({
@@ -22,8 +23,9 @@ export function BinderSpread({
   cols,
   onSlotUpdated,
   onSlotCleared,
+  onPageRenamed,
 }: BinderSpreadProps) {
-  const pageProps = { binderId, rows, cols, onSlotUpdated, onSlotCleared }
+  const pageProps = { binderId, rows, cols, onSlotUpdated, onSlotCleared, onPageRenamed }
 
   return (
     <div className="binder-spread">
