@@ -1,21 +1,35 @@
-import type { BinderPageData } from '../../api/types'
+import type { BinderPageData, BinderSlotData } from '../../api/types'
 import { BinderPage } from './BinderPage'
 import './BinderSpread.css'
 
 type BinderSpreadProps = {
+  binderId: number
   binderName: string
   leftPage: BinderPageData | null
   rightPage: BinderPageData | null
   rows: number
   cols: number
+  onSlotUpdated: (pageId: number, position: number, slot: BinderSlotData) => void
+  onSlotCleared: (pageId: number, position: number) => void
 }
 
-export function BinderSpread({ binderName, leftPage, rightPage, rows, cols }: BinderSpreadProps) {
+export function BinderSpread({
+  binderId,
+  binderName,
+  leftPage,
+  rightPage,
+  rows,
+  cols,
+  onSlotUpdated,
+  onSlotCleared,
+}: BinderSpreadProps) {
+  const pageProps = { binderId, rows, cols, onSlotUpdated, onSlotCleared }
+
   return (
     <div className="binder-spread">
       <div className="binder-spread__left">
         {leftPage ? (
-          <BinderPage page={leftPage} rows={rows} cols={cols} />
+          <BinderPage page={leftPage} {...pageProps} />
         ) : (
           <div className="binder-spread__cover">
             <span className="binder-spread__cover-name">{binderName}</span>
@@ -27,7 +41,7 @@ export function BinderSpread({ binderName, leftPage, rightPage, rows, cols }: Bi
 
       <div className="binder-spread__right">
         {rightPage ? (
-          <BinderPage page={rightPage} rows={rows} cols={cols} />
+          <BinderPage page={rightPage} {...pageProps} />
         ) : (
           <div className="binder-spread__empty-right" />
         )}

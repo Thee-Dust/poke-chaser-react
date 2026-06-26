@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { Navigate, useParams } from 'react-router-dom'
-import type { BinderDetail, BinderPageData } from '../api/types'
+import type { BinderDetail, BinderPageData, BinderSlotData } from '../api/types'
 import { BinderSidebar } from '../components/binders/BinderSidebar'
 import { BinderSpread } from '../components/binders/BinderSpread'
 import { Breadcrumb } from '../components/layout/Breadcrumb'
@@ -70,6 +70,33 @@ export function BinderBuilderPage() {
       cancelled = true
     }
   }, [data, activeId, invalidId])
+
+  function handleSlotUpdated(pageId: number, position: number, slot: BinderSlotData) {
+    setBinder((prev) => {
+      if (!prev) return prev
+      return {
+        ...prev,
+        pages: prev.pages.map((p) => {
+          if (p.id !== pageId) return p
+          const filtered = p.slots.filter((s) => s.position !== position)
+          return { ...p, slots: [...filtered, slot] }
+        }),
+      }
+    })
+  }
+
+  function handleSlotCleared(pageId: number, position: number) {
+    setBinder((prev) => {
+      if (!prev) return prev
+      return {
+        ...prev,
+        pages: prev.pages.map((p) => {
+          if (p.id !== pageId) return p
+          return { ...p, slots: p.slots.filter((s) => s.position !== position) }
+        }),
+      }
+    })
+  }
 
   async function handleAddPage() {
     if (!binder || addingPage) return
@@ -153,11 +180,14 @@ export function BinderBuilderPage() {
       <div className="binder-builder__workspace">
         <div className="binder-builder__spread-wrap">
           <BinderSpread
+            binderId={binder.id}
             binderName={binder.name}
             leftPage={left}
             rightPage={right}
             rows={binder.rows}
             cols={binder.cols}
+            onSlotUpdated={handleSlotUpdated}
+            onSlotCleared={handleSlotCleared}
           />
           <button
             type="button"

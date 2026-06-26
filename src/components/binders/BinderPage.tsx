@@ -1,13 +1,16 @@
-import type { BinderPageData } from '../../api/types'
+import type { BinderPageData, BinderSlotData } from '../../api/types'
 import { BinderSlot } from './BinderSlot'
 
 type BinderPageProps = {
+  binderId: number
   page: BinderPageData
   rows: number
   cols: number
+  onSlotUpdated: (pageId: number, position: number, slot: BinderSlotData) => void
+  onSlotCleared: (pageId: number, position: number) => void
 }
 
-export function BinderPage({ page, cols }: BinderPageProps) {
+export function BinderPage({ binderId, page, cols, onSlotUpdated, onSlotCleared }: BinderPageProps) {
   return (
     <div
       className="binder-page"
@@ -16,7 +19,15 @@ export function BinderPage({ page, cols }: BinderPageProps) {
       {Array.from({ length: page.capacity }).map((_, pos) => {
         const slot = page.slots.find((s) => s.position === pos) ?? null
         return (
-          <BinderSlot key={pos} position={pos} card={slot?.card ?? null} />
+          <BinderSlot
+            key={pos}
+            binderId={binderId}
+            pageId={page.id}
+            position={pos}
+            card={slot?.card ?? null}
+            onSlotUpdated={onSlotUpdated}
+            onSlotCleared={onSlotCleared}
+          />
         )
       })}
     </div>
