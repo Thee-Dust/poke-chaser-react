@@ -5,15 +5,9 @@ import { CardGrid } from '../components/cards/CardGrid'
 import { DeleteCollectionModal } from '../components/collections/DeleteCollectionModal'
 import { PurchaseHistoryModal } from '../components/collections/PurchaseHistoryModal'
 import { Breadcrumb } from '../components/layout/Breadcrumb'
+import { CARD_SORT_OPTIONS, SortSelect } from '../components/ui/SortSelect'
 import { useData } from '../providers/DataProviderContext'
 import './CollectionPage.css'
-
-const CARD_SORT_OPTIONS = [
-  { value: 'price_desc', label: 'Price: High to Low' },
-  { value: 'price_asc', label: 'Price: Low to High' },
-  { value: 'name_asc', label: 'A–Z' },
-  { value: 'name_desc', label: 'Z–A' },
-] as const
 
 type SortValue = typeof CARD_SORT_OPTIONS[number]['value']
 
@@ -25,6 +19,7 @@ export function CollectionPage() {
   const [detail, setDetail] = useState<CollectionDetail | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
+  const [refresh, setRefresh] = useState(0)
 
   const [sort, setSort] = useState<SortValue>('price_desc')
 
@@ -32,9 +27,9 @@ export function CollectionPage() {
   const [editName, setEditName] = useState('')
   const [saving, setSaving] = useState(false)
   const [saveError, setSaveError] = useState<string | null>(null)
+
   const [deleteModalOpen, setDeleteModalOpen] = useState(false)
   const [historyItem, setHistoryItem] = useState<CollectionItem | null>(null)
-  const [refresh, setRefresh] = useState(0)
   const inputRef = useRef<HTMLInputElement>(null)
 
   const activeId = Number(collectionId)
@@ -241,18 +236,11 @@ export function CollectionPage() {
       {detail && sortedItems.length > 0 && (
         <div className="page__header">
           <span />
-          <label className="page__sort">
-            <span className="page__sort-label">Sort</span>
-            <select
-              className="page__sort-select"
-              value={sort}
-              onChange={(e) => setSort(e.target.value as SortValue)}
-            >
-              {CARD_SORT_OPTIONS.map((o) => (
-                <option key={o.value} value={o.value}>{o.label}</option>
-              ))}
-            </select>
-          </label>
+          <SortSelect
+            options={CARD_SORT_OPTIONS}
+            value={sort}
+            onChange={(value) => setSort(value as SortValue)}
+          />
         </div>
       )}
 

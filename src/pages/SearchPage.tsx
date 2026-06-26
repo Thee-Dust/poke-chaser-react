@@ -4,14 +4,9 @@ import type { Card } from '../api/types'
 import { CardGrid } from '../components/cards/CardGrid'
 import { AddToCollectionModal } from '../components/collections/AddToCollectionModal'
 import { Pagination } from '../components/ui/Pagination'
+import { CARD_SORT_OPTIONS, SortSelect } from '../components/ui/SortSelect'
 import { useData } from '../providers/DataProviderContext'
-
-const CARD_SORT_OPTIONS = [
-  { value: 'price_desc', label: 'Price: High to Low' },
-  { value: 'price_asc', label: 'Price: Low to High' },
-  { value: 'name_asc', label: 'A–Z' },
-  { value: 'name_desc', label: 'Z–A' },
-] as const
+import './SearchPage.css'
 
 export function SearchPage() {
   const data = useData()
@@ -72,20 +67,16 @@ export function SearchPage() {
         <h1>
           {query ? `Search results for "${query}"` : 'Search'}
         </h1>
-        <div style={{ display: 'flex', gap: '8px', alignItems: 'center', flexWrap: 'wrap' }}>
+        <div className="search-page__controls">
           {query && (
-            <label className="page__sort">
-              <span className="page__sort-label">Sort</span>
-              <select
-                className="page__sort-select"
-                value={sort}
-                onChange={(e) => { setSort(e.target.value); setPage(1) }}
-              >
-                {CARD_SORT_OPTIONS.map((o) => (
-                  <option key={o.value} value={o.value}>{o.label}</option>
-                ))}
-              </select>
-            </label>
+            <SortSelect
+              options={CARD_SORT_OPTIONS}
+              value={sort}
+              onChange={(value) => {
+                setSort(value)
+                setPage(1)
+              }}
+            />
           )}
           {query && (
             <Link to="/" className="btn">

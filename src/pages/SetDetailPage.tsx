@@ -5,14 +5,12 @@ import { CardGrid } from '../components/cards/CardGrid'
 import { AddToCollectionModal } from '../components/collections/AddToCollectionModal'
 import { Breadcrumb } from '../components/layout/Breadcrumb'
 import { Pagination } from '../components/ui/Pagination'
+import { CARD_SORT_OPTIONS, SortSelect } from '../components/ui/SortSelect'
 import { useData } from '../providers/DataProviderContext'
 
-const CARD_SORT_OPTIONS = [
+const SET_CARD_SORT_OPTIONS = [
   { value: 'number_asc', label: 'Default' },
-  { value: 'price_desc', label: 'Price: High to Low' },
-  { value: 'price_asc', label: 'Price: Low to High' },
-  { value: 'name_asc', label: 'A–Z' },
-  { value: 'name_desc', label: 'Z–A' },
+  ...CARD_SORT_OPTIONS,
 ] as const
 
 export function SetDetailPage() {
@@ -127,23 +125,14 @@ export function SetDetailPage() {
 
       <div className="page__header">
         <span />
-        <label className="page__sort">
-          <span className="page__sort-label">Sort</span>
-          <select
-            className="page__sort-select"
-            value={sort}
-            onChange={(event) => {
-              setSort(event.target.value)
-              setPage(1)
-            }}
-          >
-            {CARD_SORT_OPTIONS.map((option) => (
-              <option key={option.value} value={option.value}>
-                {option.label}
-              </option>
-            ))}
-          </select>
-        </label>
+        <SortSelect
+          options={SET_CARD_SORT_OPTIONS}
+          value={sort}
+          onChange={(value) => {
+            setSort(value)
+            setPage(1)
+          }}
+        />
       </div>
 
       <CardGrid
