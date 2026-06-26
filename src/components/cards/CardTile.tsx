@@ -10,6 +10,8 @@ type CardTileProps = {
   onHistory?: () => void
   marketValue?: string | null
   quantity?: number
+  collectionId?: number
+  collectionName?: string
 }
 
 function topMarketPrice(card: Card): number | undefined {
@@ -21,15 +23,28 @@ function topMarketPrice(card: Card): number | undefined {
   return markets.length ? Math.max(...markets) : undefined
 }
 
-export function CardTile({ card, showSetName = false, onAdd, onHistory, marketValue, quantity }: CardTileProps) {
+export function CardTile({
+  card,
+  showSetName = false,
+  onAdd,
+  onHistory,
+  marketValue,
+  quantity,
+  collectionId,
+  collectionName,
+}: CardTileProps) {
   const image = card.images?.small ?? card.images?.large
   const price = marketValue == null ? topMarketPrice(card) : undefined
   const { user } = useAuth()
 
+  const cardPath = collectionId != null
+    ? `/cards/${card.id}?collectionId=${collectionId}&collectionName=${encodeURIComponent(collectionName ?? '')}`
+    : `/cards/${card.id}`
+
   return (
     <div className="card-tile">
       <Link
-        to={`/cards/${card.id}`}
+        to={cardPath}
         className="card-tile__link"
         aria-label={`View ${card.name}`}
       />

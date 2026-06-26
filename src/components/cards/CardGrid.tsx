@@ -9,9 +9,20 @@ type CardGridProps = {
   showSetName?: boolean
   onAddToCollection?: (card: Card) => void
   onHistory?: (item: CollectionItem) => void
+  collectionId?: number
+  collectionName?: string
 }
 
-export function CardGrid({ cards, items, loading, showSetName = false, onAddToCollection, onHistory }: CardGridProps) {
+export function CardGrid({
+  cards,
+  items,
+  loading,
+  showSetName = false,
+  onAddToCollection,
+  onHistory,
+  collectionId,
+  collectionName,
+}: CardGridProps) {
   const isEmpty = items ? items.length === 0 : (cards ?? []).length === 0
 
   if (loading) {
@@ -38,6 +49,8 @@ export function CardGrid({ cards, items, loading, showSetName = false, onAddToCo
             showSetName={showSetName}
             marketValue={item.market_price ?? null}
             quantity={item.quantity}
+            collectionId={collectionId}
+            collectionName={collectionName}
             onAdd={onAddToCollection}
             onHistory={onHistory ? () => onHistory(item) : undefined}
           />

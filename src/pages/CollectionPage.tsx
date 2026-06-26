@@ -252,7 +252,14 @@ export function CollectionPage() {
           </p>
         </div>
       ) : (
-        <CardGrid items={sortedItems} loading={loading} showSetName onHistory={setHistoryItem} />
+        <CardGrid
+          items={sortedItems}
+          loading={loading}
+          showSetName
+          collectionId={detail?.id}
+          collectionName={detail?.name}
+          onHistory={setHistoryItem}
+        />
       )}
 
       {deleteModalOpen && detail && (
