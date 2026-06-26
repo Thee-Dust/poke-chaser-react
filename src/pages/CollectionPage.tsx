@@ -1,52 +1,15 @@
 import { useEffect, useRef, useState } from 'react'
 import { Navigate, useNavigate, useParams } from 'react-router-dom'
-import type { Card, CollectionDetail } from '../api/types'
+import type { CollectionDetail, CollectionItem } from '../api/types'
 import { CardGrid } from '../components/cards/CardGrid'
 import { DeleteCollectionModal } from '../components/collections/DeleteCollectionModal'
+import { PurchaseHistoryModal } from '../components/collections/PurchaseHistoryModal'
 import { Breadcrumb } from '../components/layout/Breadcrumb'
+import { CARD_SORT_OPTIONS, SortSelect } from '../components/ui/SortSelect'
 import { useData } from '../providers/DataProviderContext'
 import './CollectionPage.css'
 
-const CARD_SORT_OPTIONS = [
-  { value: 'number_asc', label: 'Default' },
-  { value: 'price_desc', label: 'Price: High to Low' },
-  { value: 'price_asc', label: 'Price: Low to High' },
-  { value: 'name_asc', label: 'A–Z' },
-  { value: 'name_desc', label: 'Z–A' },
-] as const
-
 type SortValue = typeof CARD_SORT_OPTIONS[number]['value']
-
-function sortCards(cards: Card[], sort: SortValue): Card[] {
-  return [...cards].sort((a, b) => {
-    switch (sort) {
-      case 'name_asc': return (a.name ?? '').localeCompare(b.name ?? '')
-      case 'name_desc': return (b.name ?? '').localeCompare(a.name ?? '')
-      case 'price_desc':
-      case 'price_asc': {
-        const priceOf = (c: Card) => {
-          const prices = c.tcgplayer?.prices
-          if (!prices) return -1
-          const markets = Object.values(prices)
-            .map((p) => p?.market)
-            .filter((m): m is number => typeof m === 'number')
-          return markets.length ? Math.max(...markets) : -1
-        }
-        return sort === 'price_desc'
-          ? priceOf(b) - priceOf(a)
-          : priceOf(a) - priceOf(b)
-      }
-      case 'number_asc':
-      default: {
-        const num = (c: Card) => {
-          const n = parseInt(c.number ?? '', 10)
-          return isNaN(n) ? Infinity : n
-        }
-        return num(a) - num(b)
-      }
-    }
-  })
-}
 
 export function CollectionPage() {
   const { collectionId } = useParams<{ collectionId: string }>()
@@ -56,14 +19,17 @@ export function CollectionPage() {
   const [detail, setDetail] = useState<CollectionDetail | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
+  const [refresh, setRefresh] = useState(0)
 
-  const [sort, setSort] = useState<SortValue>('number_asc')
+  const [sort, setSort] = useState<SortValue>('price_desc')
 
   const [editing, setEditing] = useState(false)
   const [editName, setEditName] = useState('')
   const [saving, setSaving] = useState(false)
   const [saveError, setSaveError] = useState<string | null>(null)
+
   const [deleteModalOpen, setDeleteModalOpen] = useState(false)
+  const [historyItem, setHistoryItem] = useState<CollectionItem | null>(null)
   const inputRef = useRef<HTMLInputElement>(null)
 
   const activeId = Number(collectionId)
@@ -80,7 +46,7 @@ export function CollectionPage() {
       setDetail(null)
 
       try {
-        const d = await data.getCollection(activeId)
+        const d = await data.getCollection(activeId, sort)
         if (!cancelled) {
           setDetail(d ?? null)
         }
@@ -100,7 +66,7 @@ export function CollectionPage() {
     return () => {
       cancelled = true
     }
-  }, [data, activeId, invalidId])
+  }, [data, activeId, invalidId, sort, refresh])
 
   useEffect(() => {
     if (editing) {
@@ -153,9 +119,9 @@ export function CollectionPage() {
     return <Navigate to="/collections" replace />
   }
 
-  const rawCards = detail?.items.map((item) => item.card) ?? []
-  const cards = sortCards(rawCards, sort)
+  const sortedItems = detail?.items ?? []
   const marketValue = detail ? Number(detail.total_market_value) : 0
+  const purchasedMarketValue = detail ? Number(detail.purchased_market_value) : 0
   const totalSpent = detail ? Number(detail.total_spent) : 0
   const gainLoss = detail ? Number(detail.gain_loss) : 0
   const gainLossClass =
@@ -234,14 +200,21 @@ export function CollectionPage() {
       {error && <p className="page__error">{error}</p>}
 
       {detail && (
+        <div className="collection-detail__market-value">
+          <span className="collection-detail__market-value-label">Market Value</span>
+          <span className="collection-detail__market-value-amount">${marketValue.toFixed(2)}</span>
+        </div>
+      )}
+
+      {detail && (
         <div className="collection-detail__summary">
           <div className="collection-detail__summary-stat">
             <span className="collection-detail__summary-label">Cards</span>
             <span className="collection-detail__summary-value">{detail.card_count}</span>
           </div>
           <div className="collection-detail__summary-stat">
-            <span className="collection-detail__summary-label">Market Value</span>
-            <span className="collection-detail__summary-value">${marketValue.toFixed(2)}</span>
+            <span className="collection-detail__summary-label">Purchased Market Value</span>
+            <span className="collection-detail__summary-value">${purchasedMarketValue.toFixed(2)}</span>
           </div>
           <div className="collection-detail__summary-stat">
             <span className="collection-detail__summary-label">Total Spent</span>
@@ -260,31 +233,56 @@ export function CollectionPage() {
         <p className="page__message">Collection not found.</p>
       )}
 
-      {detail && (
+      {detail && sortedItems.length > 0 && (
         <div className="page__header">
           <span />
-          <label className="page__sort">
-            <span className="page__sort-label">Sort</span>
-            <select
-              className="page__sort-select"
-              value={sort}
-              onChange={(e) => setSort(e.target.value as SortValue)}
-            >
-              {CARD_SORT_OPTIONS.map((o) => (
-                <option key={o.value} value={o.value}>{o.label}</option>
-              ))}
-            </select>
-          </label>
+          <SortSelect
+            options={CARD_SORT_OPTIONS}
+            value={sort}
+            onChange={(value) => setSort(value as SortValue)}
+          />
         </div>
       )}
 
-      <CardGrid cards={cards} loading={loading} showSetName />
+      {!loading && detail && sortedItems.length === 0 ? (
+        <div className="collection-detail__empty">
+          <p className="collection-detail__empty-title">No cards in this collection yet</p>
+          <p className="collection-detail__empty-text">
+            Search for cards and add them with the + button on any card.
+          </p>
+        </div>
+      ) : (
+        <CardGrid
+          items={sortedItems}
+          loading={loading}
+          showSetName
+          collectionId={detail?.id}
+          collectionName={detail?.name}
+          onHistory={setHistoryItem}
+        />
+      )}
 
       {deleteModalOpen && detail && (
         <DeleteCollectionModal
           collectionName={detail.name}
           onConfirm={handleDeleteConfirm}
           onClose={() => setDeleteModalOpen(false)}
+        />
+      )}
+
+      {historyItem && detail && (
+        <PurchaseHistoryModal
+          collectionId={detail.id}
+          itemId={historyItem.id}
+          cardName={historyItem.card.name}
+          purchases={historyItem.purchases}
+          quantity={historyItem.quantity ?? 1}
+          marketPrice={historyItem.market_price ?? null}
+          onClose={() => setHistoryItem(null)}
+          onMutated={() => {
+            setHistoryItem(null)
+            setRefresh((n) => n + 1)
+          }}
         />
       )}
     </div>

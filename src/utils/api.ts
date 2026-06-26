@@ -4,17 +4,6 @@ export const getUrl = (route: string) => {
   return `${apiUrl}/${route}`.replace(/([^:]\/)\/+/g, '$1')
 }
 
-export const buildQuery = (filters: Record<string, string | number | undefined>) => {
-  const params = new URLSearchParams()
-  for (const [key, value] of Object.entries(filters)) {
-    if (value !== undefined && value !== '') {
-      params.set(key, String(value))
-    }
-  }
-  const query = params.toString()
-  return query ? `?${query}` : ''
-}
-
 function getCsrfToken(): string {
   const match = document.cookie.match(/(?:^|;\s*)csrftoken=([^;]+)/)
   return match ? decodeURIComponent(match[1]) : ''

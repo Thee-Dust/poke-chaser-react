@@ -89,11 +89,14 @@ export type CollectionItem = {
   card: Card
   purchases: CollectionPurchase[]
   market_value: string | null
+  market_price?: string | null
   total_spent: string
   gain_loss: string | null
+  quantity?: number
 }
 
 export type CollectionDetail = CollectionSummary & {
+  purchased_market_value: string
   total_spent: string
   gain_loss: string
   items: CollectionItem[]

@@ -1,6 +1,6 @@
 .card-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(175px, 1fr));
   gap: 20px;
 }
 
@@ -10,19 +10,36 @@
 }
 
 .card-tile {
+  position: relative;
   display: flex;
   flex-direction: column;
   border: 1px solid var(--border);
   border-radius: 10px;
   overflow: hidden;
-  text-decoration: none;
   background: var(--bg);
+  cursor: pointer;
   transition: border-color 0.2s, box-shadow 0.2s;
 }
 
 .card-tile:hover {
   border-color: var(--accent-border);
   box-shadow: var(--shadow);
+}
+
+.card-tile__link {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  border-radius: 10px;
+}
+
+.card-tile__content {
+  position: relative;
+  z-index: 0;
+  pointer-events: none;
+  display: flex;
+  flex-direction: column;
+  flex: 1;
 }
 
 .card-tile__image-wrap {
@@ -32,11 +49,14 @@
   align-items: center;
   justify-content: center;
   overflow: hidden;
+  padding: 14px 12px 8px;
 }
 
 .card-tile__image {
-  width: 100%;
-  height: 100%;
+  width: auto;
+  height: auto;
+  max-width: 100%;
+  max-height: 100%;
   object-fit: contain;
 }
 
@@ -74,16 +94,87 @@
   margin: 0;
 }
 
-.card-tile__price {
-  font-size: 14px;
-  font-weight: 600;
-  color: var(--accent);
+.card-tile__footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
   margin-top: auto;
   padding-top: 6px;
 }
 
+.card-tile__quantity {
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--text);
+}
+
+.card-tile__price-group {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.card-tile__price {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--accent);
+  margin: 0;
+}
+
+.card-tile__add-btn {
+  position: relative;
+  z-index: 1;
+  pointer-events: auto;
+  margin-left: auto;
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  border: 2px solid var(--accent);
+  background: transparent;
+  color: var(--accent);
+  font-size: 18px;
+  line-height: 1;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: background 0.2s, color 0.2s, transform 0.15s;
+}
+
+.card-tile__add-btn:hover {
+  background: var(--accent);
+  color: #fff;
+  transform: scale(1.1);
+}
+
+.card-tile__history-btn {
+  position: relative;
+  z-index: 1;
+  pointer-events: auto;
+  margin-left: auto;
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  border: 2px solid var(--border);
+  background: transparent;
+  color: var(--text);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: border-color 0.2s, color 0.2s, background 0.2s;
+}
+
+.card-tile__history-btn:hover {
+  border-color: var(--accent-border);
+  color: var(--accent);
+  background: var(--accent-bg);
+}
+
 .card-tile--skeleton {
-  min-height: 240px;
+  min-height: 300px;
   border-radius: 10px;
   background: linear-gradient(
     90deg,

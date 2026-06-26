@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import type { Set } from '../api/types'
 import { SetGrid } from '../components/sets/SetGrid'
 import { Pagination } from '../components/ui/Pagination'
+import { SortSelect } from '../components/ui/SortSelect'
 import { useData } from '../providers/DataProviderContext'
 
 const SORT_OPTIONS = [
@@ -55,23 +56,14 @@ export function DashboardPage() {
     <div className="page">
       <div className="page__header">
         <h1>Browse Sets</h1>
-        <label className="page__sort">
-          <span className="page__sort-label">Sort</span>
-          <select
-            className="page__sort-select"
-            value={sort}
-            onChange={(event) => {
-              setSort(event.target.value)
-              setPage(1)
-            }}
-          >
-            {SORT_OPTIONS.map((option) => (
-              <option key={option.value} value={option.value}>
-                {option.label}
-              </option>
-            ))}
-          </select>
-        </label>
+        <SortSelect
+          options={SORT_OPTIONS}
+          value={sort}
+          onChange={(value) => {
+            setSort(value)
+            setPage(1)
+          }}
+        />
       </div>
       {error && <p className="page__error">{error}</p>}
       <SetGrid sets={sets} loading={loading} />

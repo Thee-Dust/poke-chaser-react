@@ -1,4 +1,4 @@
-import type { Card, CollectionDetail, CollectionSummary, Set } from '../api/types'
+import type { Card, CollectionDetail, CollectionPurchase, CollectionSummary, Set } from '../api/types'
 import { ensureCsrf, fetchJson, getUrl } from '../utils/api'
 
 async function getSets(page = 1, sort = 'release_date_desc') {
@@ -67,8 +67,10 @@ async function getCollections(): Promise<CollectionSummary[]> {
   return Array.isArray(json) ? json : []
 }
 
-async function getCollection(id: number): Promise<CollectionDetail | undefined> {
-  const { json } = await fetchJson<CollectionDetail>(getUrl(`collections/${id}/`))
+async function getCollection(id: number, sort = 'number_asc'): Promise<CollectionDetail | undefined> {
+  const params = new URLSearchParams()
+  params.set('sort', sort)
+  const { json } = await fetchJson<CollectionDetail>(getUrl(`collections/${id}/?${params.toString()}`))
   return json
 }
 
@@ -81,12 +83,38 @@ async function createCollection(name: string): Promise<CollectionSummary> {
   return { ...json, card_count: 0, total_market_value: '0.00' }
 }
 
-async function addCardToCollection(collectionId: number, cardId: string): Promise<void> {
+async function addCardToCollection(collectionId: number, cardId: string, quantity = 1): Promise<void> {
   await ensureCsrf()
   await fetchJson(getUrl(`collections/${collectionId}/items/`), {
     method: 'POST',
-    body: JSON.stringify({ card_id: cardId }),
+    body: JSON.stringify({ card_id: cardId, quantity }),
   })
+}
+
+async function addPurchase(
+  collectionId: number,
+  itemId: number,
+  purchasePrice: string,
+  acquiredDate: string,
+): Promise<CollectionPurchase> {
+  await ensureCsrf()
+  const { json } = await fetchJson<CollectionPurchase>(
+    getUrl(`collections/${collectionId}/items/${itemId}/purchases/`),
+    { method: 'POST', body: JSON.stringify({ purchase_price: purchasePrice, acquired_date: acquiredDate }) },
+  )
+  return json
+}
+
+async function deletePurchase(
+  collectionId: number,
+  itemId: number,
+  purchaseId: number,
+): Promise<void> {
+  await ensureCsrf()
+  await fetchJson(
+    getUrl(`collections/${collectionId}/items/${itemId}/purchases/${purchaseId}/`),
+    { method: 'DELETE' },
+  )
 }
 
 async function deleteCollection(id: number): Promise<void> {
@@ -113,6 +141,8 @@ export const dataProvider = {
   getCollection,
   createCollection,
   addCardToCollection,
+  addPurchase,
+  deletePurchase,
   updateCollection,
   deleteCollection,
 }

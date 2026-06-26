@@ -4,8 +4,8 @@ import { useData } from '../../providers/DataProviderContext'
 import './AddToCollectionModal.css'
 
 type AddToCollectionModalProps = {
-  cardId: string
-  cardName: string
+  cardId?: string
+  cardName?: string
   onClose: () => void
 }
 
@@ -18,6 +18,7 @@ export function AddToCollectionModal({ cardId, cardName, onClose }: AddToCollect
   const [collections, setCollections] = useState<CollectionSummary[]>([])
   const [loadingCollections, setLoadingCollections] = useState(true)
   const [selectedId, setSelectedId] = useState<number | null>(null)
+  const [quantity, setQuantity] = useState(1)
   const [submitting, setSubmitting] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [newName, setNewName] = useState('')
@@ -64,11 +65,11 @@ export function AddToCollectionModal({ cardId, cardName, onClose }: AddToCollect
   }
 
   async function handleAdd() {
-    if (selectedId === null) return
+    if (selectedId === null || !cardId) return
     setSubmitting(true)
     setError(null)
     try {
-      await data.addCardToCollection(selectedId, cardId)
+      await data.addCardToCollection(selectedId, cardId, quantity)
       onClose()
     } catch {
       setError('Failed to add card to collection. Please try again.')
@@ -99,7 +100,17 @@ export function AddToCollectionModal({ cardId, cardName, onClose }: AddToCollect
     }
   }
 
-  const title = view === 'select' ? `Add ${cardName} to collection` : 'New collection'
+  function decrementQuantity() {
+    setQuantity((q) => Math.max(1, q - 1))
+  }
+
+  function incrementQuantity() {
+    setQuantity((q) => Math.min(99, q + 1))
+  }
+
+  const title = view === 'select'
+    ? (cardName ? `Add ${cardName} to collection` : 'Add card to collection')
+    : 'New collection'
 
   return (
     <div
@@ -155,6 +166,46 @@ export function AddToCollectionModal({ cardId, cardName, onClose }: AddToCollect
               </button>
             )}
 
+            <div className="add-to-collection-modal__quantity">
+              <span className="add-to-collection-modal__quantity-text" id="add-quantity-label">
+                Quantity
+              </span>
+              <div
+                className="add-to-collection-modal__quantity-stepper"
+                role="group"
+                aria-labelledby="add-quantity-label"
+              >
+                <button
+                  type="button"
+                  className="add-to-collection-modal__quantity-btn"
+                  onClick={decrementQuantity}
+                  disabled={quantity <= 1}
+                  aria-label="Decrease quantity"
+                >
+                  −
+                </button>
+                <input
+                  id="add-quantity"
+                  className="add-to-collection-modal__quantity-input"
+                  type="number"
+                  min={1}
+                  max={99}
+                  value={quantity}
+                  aria-labelledby="add-quantity-label"
+                  onChange={(e) => setQuantity(Math.max(1, Math.min(99, Number(e.target.value))))}
+                />
+                <button
+                  type="button"
+                  className="add-to-collection-modal__quantity-btn add-to-collection-modal__quantity-btn--plus"
+                  onClick={incrementQuantity}
+                  disabled={quantity >= 99}
+                  aria-label="Increase quantity"
+                >
+                  +
+                </button>
+              </div>
+            </div>
+
             {error && <p className="add-to-collection-modal__error">{error}</p>}
 
             <div className="add-to-collection-modal__actions">
@@ -165,7 +216,7 @@ export function AddToCollectionModal({ cardId, cardName, onClose }: AddToCollect
                 type="button"
                 className="btn btn--primary"
                 onClick={() => void handleAdd()}
-                disabled={selectedId === null || submitting}
+                disabled={selectedId === null || !cardId || submitting}
               >
                 {submitting ? 'Adding…' : 'Add'}
               </button>

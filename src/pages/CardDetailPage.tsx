@@ -1,8 +1,8 @@
 import { useEffect, useState } from 'react'
-import { Link, useParams } from 'react-router-dom'
+import { Link, useParams, useSearchParams } from 'react-router-dom'
 import type { Card } from '../api/types'
 import { AddToCollectionModal } from '../components/collections/AddToCollectionModal'
-import { Breadcrumb } from '../components/layout/Breadcrumb'
+import { Breadcrumb, type BreadcrumbItem } from '../components/layout/Breadcrumb'
 import { useAuth } from '../context/AuthContext'
 import { useData } from '../providers/DataProviderContext'
 
@@ -17,9 +17,33 @@ const ENERGY_ABBR: Record<string, string> = {
   Fighting: 'F', Darkness: 'D', Metal: 'M', Colorless: 'C', Dragon: 'N', Fairy: 'Y',
 }
 
+function getCardBreadcrumbItems(searchParams: URLSearchParams, card?: Card): BreadcrumbItem[] {
+  const collectionIdParam = searchParams.get('collectionId')
+  const collectionNameParam = searchParams.get('collectionName')
+  const fromCollection = collectionIdParam && !isNaN(Number(collectionIdParam))
+  const cardLabel = card?.name ?? 'Card'
+
+  if (fromCollection) {
+    return [
+      { label: 'Collections', to: '/collections' },
+      { label: collectionNameParam || 'Collection', to: `/collections/${collectionIdParam}` },
+      { label: cardLabel },
+    ]
+  }
+
+  return [
+    { label: 'Browse Sets', to: '/' },
+    ...(card?.set_id && card?.set_name
+      ? [{ label: card.set_name, to: `/sets/${card.set_id}` }]
+      : []),
+    { label: cardLabel },
+  ]
+}
+
 export function CardDetailPage() {
   const data = useData()
   const { cardId = '' } = useParams()
+  const [searchParams] = useSearchParams()
   const { user, openAuthModal } = useAuth()
   const [card, setCard] = useState<Card | undefined>()
   const [loading, setLoading] = useState(true)
@@ -69,7 +93,7 @@ export function CardDetailPage() {
   if (error || !card) {
     return (
       <div className="page">
-        <Breadcrumb items={[{ label: 'Browse Sets', to: '/' }, { label: 'Card' }]} />
+        <Breadcrumb items={getCardBreadcrumbItems(searchParams)} />
         <p className="page__error">{error ?? 'Card not found.'}</p>
         <Link to="/" className="btn">
           Back to sets
@@ -80,15 +104,7 @@ export function CardDetailPage() {
 
   return (
     <div className="page">
-      <Breadcrumb
-        items={[
-          { label: 'Browse Sets', to: '/' },
-          ...(card.set_id && card.set_name
-            ? [{ label: card.set_name, to: `/sets/${card.set_id}` }]
-            : []),
-          { label: card.name },
-        ]}
-      />
+      <Breadcrumb items={getCardBreadcrumbItems(searchParams, card)} />
 
       <div className="card-detail">
         <div className="card-detail__image-col">
