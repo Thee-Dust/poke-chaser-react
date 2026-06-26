@@ -1,0 +1,136 @@
+.binder-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  min-width: 0;
+}
+
+.binder-grid__empty {
+  color: var(--text);
+  padding: 24px 0;
+}
+
+.binder-tile {
+  position: relative;
+  display: block;
+  min-width: 0;
+  min-height: 72px;
+  padding: 20px;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  background: var(--bg);
+  cursor: pointer;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.binder-tile:hover {
+  border-color: var(--accent-border);
+  box-shadow: var(--shadow);
+}
+
+.binder-tile__link {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  border-radius: 10px;
+}
+
+.binder-tile__content {
+  position: relative;
+  z-index: 0;
+  pointer-events: none;
+}
+
+.binder-tile__header {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 16px;
+}
+
+.binder-tile__name-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+  flex: 1;
+}
+
+.binder-tile__name {
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--text-h);
+  min-width: 0;
+}
+
+.binder-tile__size {
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--text-h);
+  flex-shrink: 0;
+}
+
+.binder-tile__delete-btn {
+  position: relative;
+  z-index: 1;
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 4px;
+  border: none;
+  border-radius: 6px;
+  background: none;
+  color: var(--text);
+  cursor: pointer;
+  pointer-events: auto;
+  transition: color 0.2s, background 0.2s;
+}
+
+.binder-tile__delete-btn:hover {
+  color: #dc2626;
+  background: rgba(220, 38, 38, 0.08);
+}
+
+.binder-tile__meta {
+  display: block;
+  font-size: 14px;
+  color: var(--text);
+  margin: 6px 0 0;
+}
+
+.binder-tile--new {
+  display: block;
+  width: 100%;
+  padding: 20px;
+  text-align: left;
+  cursor: pointer;
+  font: inherit;
+  font-size: 15px;
+  color: var(--text);
+  border-style: dashed;
+}
+
+.binder-tile--new:hover {
+  color: var(--accent);
+  border-color: var(--accent-border);
+  box-shadow: none;
+}
+
+.binder-tile--skeleton {
+  min-height: 72px;
+  border-radius: 10px;
+  background: linear-gradient(
+    90deg,
+    var(--code-bg) 25%,
+    var(--border) 50%,
+    var(--code-bg) 75%
+  );
+  background-size: 200% 100%;
+  animation: binder-tile-shimmer 1.5s infinite;
+}
+
+@keyframes binder-tile-shimmer {
+  0% { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}

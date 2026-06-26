@@ -1,4 +1,4 @@
-import type { Card, CollectionDetail, CollectionPurchase, CollectionSummary, Set } from '../api/types'
+import type { BinderDetail, BinderPageData, BinderSize, BinderSlotData, BinderSummary, Card, CollectionDetail, CollectionPurchase, CollectionSummary, Set } from '../api/types'
 import { ensureCsrf, fetchJson, getUrl } from '../utils/api'
 
 async function getSets(page = 1, sort = 'release_date_desc') {
@@ -131,6 +131,85 @@ async function updateCollection(id: number, name: string): Promise<CollectionDet
   return json
 }
 
+async function getBinderSizes(): Promise<BinderSize[]> {
+  const { json } = await fetchJson<BinderSize[]>(getUrl('binders/sizes/'))
+  return Array.isArray(json) ? json : []
+}
+
+async function getBinders(): Promise<BinderSummary[]> {
+  const { json } = await fetchJson<BinderSummary[]>(getUrl('binders/'))
+  return Array.isArray(json) ? json : []
+}
+
+async function getBinder(id: number): Promise<BinderDetail | undefined> {
+  const { json } = await fetchJson<BinderDetail>(getUrl(`binders/${id}/`))
+  return json
+}
+
+async function createBinder(name: string, rows: number, cols: number): Promise<BinderSummary> {
+  await ensureCsrf()
+  const { json } = await fetchJson<BinderSummary>(getUrl('binders/'), {
+    method: 'POST',
+    body: JSON.stringify({ name, rows, cols }),
+  })
+  return json
+}
+
+async function deleteBinder(id: number): Promise<void> {
+  await ensureCsrf()
+  await fetchJson(getUrl(`binders/${id}/`), { method: 'DELETE' })
+}
+
+async function updateBinder(id: number, name: string): Promise<void> {
+  await ensureCsrf()
+  await fetchJson(getUrl(`binders/${id}/`), {
+    method: 'PATCH',
+    body: JSON.stringify({ name }),
+  })
+}
+
+async function addBinderPage(binderId: number): Promise<BinderPageData> {
+  await ensureCsrf()
+  const { json } = await fetchJson<BinderPageData>(getUrl(`binders/${binderId}/pages/`), {
+    method: 'POST',
+    body: JSON.stringify({}),
+  })
+  return json
+}
+
+async function updateBinderPage(binderId: number, pageId: number, name: string): Promise<BinderPageData> {
+  await ensureCsrf()
+  const { json } = await fetchJson<BinderPageData>(getUrl(`binders/${binderId}/pages/${pageId}/`), {
+    method: 'PATCH',
+    body: JSON.stringify({ name }),
+  })
+  return json
+}
+
+async function deleteBinderPage(binderId: number, pageId: number): Promise<void> {
+  await ensureCsrf()
+  await fetchJson(getUrl(`binders/${binderId}/pages/${pageId}/`), { method: 'DELETE' })
+}
+
+async function setSlotCard(
+  binderId: number,
+  pageId: number,
+  position: number,
+  cardId: string,
+): Promise<BinderSlotData> {
+  await ensureCsrf()
+  const { json } = await fetchJson<BinderSlotData>(
+    getUrl(`binders/${binderId}/pages/${pageId}/slots/${position}/`),
+    { method: 'PUT', body: JSON.stringify({ card_id: cardId }) },
+  )
+  return json
+}
+
+async function clearSlotCard(binderId: number, pageId: number, position: number): Promise<void> {
+  await ensureCsrf()
+  await fetchJson(getUrl(`binders/${binderId}/pages/${pageId}/slots/${position}/`), { method: 'DELETE' })
+}
+
 export const dataProvider = {
   getSets,
   getSet,
@@ -145,6 +224,17 @@ export const dataProvider = {
   deletePurchase,
   updateCollection,
   deleteCollection,
+  getBinderSizes,
+  getBinders,
+  getBinder,
+  createBinder,
+  deleteBinder,
+  updateBinder,
+  addBinderPage,
+  updateBinderPage,
+  deleteBinderPage,
+  setSlotCard,
+  clearSlotCard,
 }
 
 export type DataProvider = typeof dataProvider
