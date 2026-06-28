@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import { Navigate, useParams } from 'react-router-dom'
 import type { BinderDetail, BinderPageData, BinderSlotData } from '../api/types'
+import { BinderPageNameEditor } from '../components/binders/BinderPageNameEditor'
 import { BinderSidebar } from '../components/binders/BinderSidebar'
 import { BinderSpread } from '../components/binders/BinderSpread'
 import { Breadcrumb } from '../components/layout/Breadcrumb'
@@ -32,6 +33,10 @@ function getSpreadLabel(spread: number, pages: BinderPageData[]): string {
   const leftNum = 2 * spread
   const rightNum = 2 * spread + 1
   return rightNum <= pages.length ? `Page ${leftNum} / Page ${rightNum}` : `Page ${leftNum}`
+}
+
+function getPageNumber(page: BinderPageData, pages: BinderPageData[]): number {
+  return pages.findIndex((p) => p.id === page.id) + 1
 }
 
 export function BinderBuilderPage() {
@@ -205,46 +210,64 @@ export function BinderBuilderPage() {
         <div className="binder-builder__spread-wrap">
           <div className="binder-builder__spread-col">
             <div className="binder-builder__title-row">
-              <button
-                type="button"
-                className="btn binder-builder__nav-btn"
-                onClick={() => setCurrentSpread((s) => Math.max(0, s - 1))}
-                disabled={clampedSpread === 0}
-                aria-label="Previous spread"
-              >
-                ‹
-              </button>
-
-              {editingName ? (
-                <input
-                  ref={nameInputRef}
-                  className="binder-builder__name-input"
-                  value={editNameValue}
-                  onChange={(e) => setEditNameValue(e.target.value)}
-                  onBlur={() => void handleSaveName()}
-                  onKeyDown={handleNameKeyDown}
-                  disabled={savingName}
-                  aria-label="Binder name"
-                />
-              ) : (
-                <h1
-                  className="binder-builder__title"
-                  onDoubleClick={startEditingName}
-                  title="Double-click to rename"
+              <div className="binder-builder__title-page binder-builder__title-page--left">
+                <button
+                  type="button"
+                  className="btn binder-builder__nav-btn"
+                  onClick={() => setCurrentSpread((s) => Math.max(0, s - 1))}
+                  disabled={clampedSpread === 0}
+                  aria-label="Previous spread"
                 >
-                  {binder.name}
-                </h1>
-              )}
+                  ‹
+                </button>
+                <BinderPageNameEditor
+                  binderId={binder.id}
+                  page={left}
+                  pageNumber={left ? getPageNumber(left, binder.pages) : 0}
+                  onRenamed={handlePageRenamed}
+                />
+              </div>
 
-              <button
-                type="button"
-                className="btn binder-builder__nav-btn"
-                onClick={() => setCurrentSpread((s) => Math.min(spreads - 1, s + 1))}
-                disabled={clampedSpread >= spreads - 1}
-                aria-label="Next spread"
-              >
-                ›
-              </button>
+              <div className="binder-builder__title-spine">
+                {editingName ? (
+                  <input
+                    ref={nameInputRef}
+                    className="binder-builder__name-input"
+                    value={editNameValue}
+                    onChange={(e) => setEditNameValue(e.target.value)}
+                    onBlur={() => void handleSaveName()}
+                    onKeyDown={handleNameKeyDown}
+                    disabled={savingName}
+                    aria-label="Binder name"
+                  />
+                ) : (
+                  <h1
+                    className="binder-builder__title"
+                    onDoubleClick={startEditingName}
+                    title="Double-click to rename"
+                  >
+                    {binder.name}
+                  </h1>
+                )}
+              </div>
+
+              <div className="binder-builder__title-page binder-builder__title-page--right">
+                <BinderPageNameEditor
+                  binderId={binder.id}
+                  page={right}
+                  pageNumber={right ? getPageNumber(right, binder.pages) : 0}
+                  onRenamed={handlePageRenamed}
+                />
+                <button
+                  type="button"
+                  className="btn binder-builder__nav-btn"
+                  onClick={() => setCurrentSpread((s) => Math.min(spreads - 1, s + 1))}
+                  disabled={clampedSpread >= spreads - 1}
+                  aria-label="Next spread"
+                >
+                  ›
+                </button>
+              </div>
             </div>
             <BinderSpread
               binderId={binder.id}
@@ -255,7 +278,6 @@ export function BinderBuilderPage() {
               cols={binder.cols}
               onSlotUpdated={handleSlotUpdated}
               onSlotCleared={handleSlotCleared}
-              onPageRenamed={handlePageRenamed}
             />
           </div>
           <div className="binder-builder__add-page-wrap">
