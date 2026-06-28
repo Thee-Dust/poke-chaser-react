@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { Navigate, useParams } from 'react-router-dom'
 import type { BinderDetail, BinderPageData, BinderSlotData } from '../api/types'
 import { BinderPageNameEditor } from '../components/binders/BinderPageNameEditor'
+import { getPageDisplayName } from '../components/binders/binderPageLabels'
 import { BinderSidebar } from '../components/binders/BinderSidebar'
 import { BinderSpread } from '../components/binders/BinderSpread'
 import { Breadcrumb } from '../components/layout/Breadcrumb'
@@ -27,16 +28,18 @@ function getSpreadPages(
 }
 
 function getSpreadLabel(spread: number, pages: BinderPageData[]): string {
-  if (spread === 0) {
-    return pages.length > 0 ? 'Cover / Page 1' : 'Cover'
-  }
-  const leftNum = 2 * spread
-  const rightNum = 2 * spread + 1
-  return rightNum <= pages.length ? `Page ${leftNum} / Page ${rightNum}` : `Page ${leftNum}`
-}
+  const { left, right } = getSpreadPages(spread, pages)
 
-function getPageNumber(page: BinderPageData, pages: BinderPageData[]): number {
-  return pages.findIndex((p) => p.id === page.id) + 1
+  if (spread === 0) {
+    if (!right) return 'Cover'
+    return `Cover / ${getPageDisplayName(right, pages)}`
+  }
+
+  if (left && right) {
+    return `${getPageDisplayName(left, pages)} / ${getPageDisplayName(right, pages)}`
+  }
+  if (left) return getPageDisplayName(left, pages)
+  return 'Cover'
 }
 
 export function BinderBuilderPage() {
@@ -188,7 +191,7 @@ export function BinderBuilderPage() {
                 <BinderPageNameEditor
                   binderId={binder.id}
                   page={left}
-                  pageNumber={left ? getPageNumber(left, binder.pages) : 0}
+                  pages={binder.pages}
                   onRenamed={handlePageRenamed}
                 />
               </div>
@@ -199,7 +202,7 @@ export function BinderBuilderPage() {
                 <BinderPageNameEditor
                   binderId={binder.id}
                   page={right}
-                  pageNumber={right ? getPageNumber(right, binder.pages) : 0}
+                  pages={binder.pages}
                   onRenamed={handlePageRenamed}
                 />
                 <button

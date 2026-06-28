@@ -1,16 +1,12 @@
 import { useEffect, useRef, useState } from 'react'
 import type { BinderPageData } from '../../api/types'
 import { useData } from '../../providers/DataProviderContext'
-
-function getPageDisplayName(page: BinderPageData, pageNumber: number): string {
-  const trimmed = page.name.trim()
-  return trimmed || `Page ${pageNumber}`
-}
+import { getPageDisplayName } from './binderPageLabels'
 
 type BinderPageNameEditorProps = {
   binderId: number
   page: BinderPageData | null
-  pageNumber: number
+  pages: BinderPageData[]
   className?: string
   onRenamed: (pageId: number, name: string) => void
 }
@@ -18,7 +14,7 @@ type BinderPageNameEditorProps = {
 export function BinderPageNameEditor({
   binderId,
   page,
-  pageNumber,
+  pages,
   className = 'binder-builder__page-name',
   onRenamed,
 }: BinderPageNameEditorProps) {
@@ -37,7 +33,7 @@ export function BinderPageNameEditor({
 
   if (!page) return null
 
-  const displayName = getPageDisplayName(page, pageNumber)
+  const displayName = getPageDisplayName(page, pages)
 
   function startEditing() {
     setEditName(page!.name.trim() || displayName)
