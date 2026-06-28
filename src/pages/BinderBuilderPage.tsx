@@ -199,31 +199,12 @@ export function BinderBuilderPage() {
     <div className="binder-builder">
       <div className="binder-builder__header">
         <Breadcrumb items={[{ label: 'Binders', to: '/binders' }, { label: binder.name }]} />
+      </div>
 
-        <div className="binder-builder__title-row">
-          {editingName ? (
-            <input
-              ref={nameInputRef}
-              className="binder-builder__name-input"
-              value={editNameValue}
-              onChange={(e) => setEditNameValue(e.target.value)}
-              onBlur={() => void handleSaveName()}
-              onKeyDown={handleNameKeyDown}
-              disabled={savingName}
-              aria-label="Binder name"
-            />
-          ) : (
-            <h1
-              className="binder-builder__title"
-              onDoubleClick={startEditingName}
-              title="Double-click to rename"
-            >
-              {binder.name}
-            </h1>
-          )}
-
-          <div className="binder-builder__controls">
-            <div className="binder-builder__nav">
+      <div className="binder-builder__workspace">
+        <div className="binder-builder__spread-wrap">
+          <div className="binder-builder__spread-col">
+            <div className="binder-builder__title-row">
               <button
                 type="button"
                 className="btn binder-builder__nav-btn"
@@ -233,20 +214,28 @@ export function BinderBuilderPage() {
               >
                 ‹
               </button>
-              <label className="binder-builder__jump-label">
-                <span className="binder-builder__jump-sr">Jump to</span>
-                <select
-                  className="binder-builder__jump-select"
-                  value={clampedSpread}
-                  onChange={(e) => setCurrentSpread(Number(e.target.value))}
+
+              {editingName ? (
+                <input
+                  ref={nameInputRef}
+                  className="binder-builder__name-input"
+                  value={editNameValue}
+                  onChange={(e) => setEditNameValue(e.target.value)}
+                  onBlur={() => void handleSaveName()}
+                  onKeyDown={handleNameKeyDown}
+                  disabled={savingName}
+                  aria-label="Binder name"
+                />
+              ) : (
+                <h1
+                  className="binder-builder__title"
+                  onDoubleClick={startEditingName}
+                  title="Double-click to rename"
                 >
-                  {Array.from({ length: spreads }).map((_, i) => (
-                    <option key={i} value={i}>
-                      {getSpreadLabel(i, binder.pages)}
-                    </option>
-                  ))}
-                </select>
-              </label>
+                  {binder.name}
+                </h1>
+              )}
+
               <button
                 type="button"
                 className="btn binder-builder__nav-btn"
@@ -257,44 +246,57 @@ export function BinderBuilderPage() {
                 ›
               </button>
             </div>
-
+            <BinderSpread
+              binderId={binder.id}
+              binderName={binder.name}
+              leftPage={left}
+              rightPage={right}
+              rows={binder.rows}
+              cols={binder.cols}
+              onSlotUpdated={handleSlotUpdated}
+              onSlotCleared={handleSlotCleared}
+              onPageRenamed={handlePageRenamed}
+            />
+          </div>
+          <div className="binder-builder__add-page-wrap">
             <button
               type="button"
-              className="btn binder-builder__sidebar-toggle"
-              onClick={() => setSidebarOpen((o) => !o)}
-              aria-label="Toggle card panel"
+              className="binder-builder__add-page"
+              onClick={() => void handleAddPage()}
+              disabled={addingPage}
+              aria-label="Add page"
+              title="Add page"
             >
-              Cards
+              +
             </button>
           </div>
         </div>
-      </div>
 
-      <div className="binder-builder__workspace">
-        <div className="binder-builder__spread-wrap">
-          <BinderSpread
-            binderId={binder.id}
-            binderName={binder.name}
-            leftPage={left}
-            rightPage={right}
-            rows={binder.rows}
-            cols={binder.cols}
-            onSlotUpdated={handleSlotUpdated}
-            onSlotCleared={handleSlotCleared}
-            onPageRenamed={handlePageRenamed}
-          />
+        <div className="binder-builder__aside">
+          <label className="binder-builder__jump-label">
+            <span className="binder-builder__jump-sr">Jump to</span>
+            <select
+              className="binder-builder__jump-select"
+              value={clampedSpread}
+              onChange={(e) => setCurrentSpread(Number(e.target.value))}
+            >
+              {Array.from({ length: spreads }).map((_, i) => (
+                <option key={i} value={i}>
+                  {getSpreadLabel(i, binder.pages)}
+                </option>
+              ))}
+            </select>
+          </label>
           <button
             type="button"
-            className="binder-builder__add-page"
-            onClick={() => void handleAddPage()}
-            disabled={addingPage}
-            aria-label="Add page"
-            title="Add page"
+            className="btn binder-builder__sidebar-toggle"
+            onClick={() => setSidebarOpen((o) => !o)}
+            aria-label="Toggle card panel"
           >
-            +
+            Cards
           </button>
+          <BinderSidebar isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} />
         </div>
-        <BinderSidebar isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} />
       </div>
     </div>
   )

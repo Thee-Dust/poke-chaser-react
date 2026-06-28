@@ -14,11 +14,19 @@
 }
 
 .binder-builder__title-row {
-  display: flex;
+  display: grid;
+  grid-template-columns: auto 1fr auto;
   align-items: center;
-  justify-content: space-between;
-  gap: 16px;
-  flex-wrap: wrap;
+  gap: 12px;
+  width: 100%;
+}
+
+.binder-builder__title-row > .binder-builder__nav-btn:first-child {
+  justify-self: start;
+}
+
+.binder-builder__title-row > .binder-builder__nav-btn:last-child {
+  justify-self: end;
 }
 
 .binder-builder__title {
@@ -27,6 +35,7 @@
   font-weight: 600;
   cursor: default;
   user-select: none;
+  text-align: center;
 
   @media (max-width: 1024px) {
     font-size: 22px;
@@ -49,18 +58,12 @@
   outline: none;
   min-width: 180px;
   max-width: 400px;
+  justify-self: center;
+  text-align: center;
 
   @media (max-width: 1024px) {
     font-size: 22px;
   }
-}
-
-/* Controls: nav + sidebar toggle grouped */
-.binder-builder__controls {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  flex-shrink: 0;
 }
 
 /* Sidebar toggle — visible only on narrow screens */
@@ -72,14 +75,6 @@
   }
 }
 
-/* Navigation bar */
-.binder-builder__nav {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  flex-shrink: 0;
-}
-
 .binder-builder__nav-btn {
   font-size: 22px;
   line-height: 1;
@@ -89,19 +84,8 @@
 }
 
 .binder-builder__jump-label {
-  display: inline-flex;
-  align-items: center;
-}
-
-.binder-builder__jump-sr {
-  position: absolute;
-  width: 1px;
-  height: 1px;
-  padding: 0;
-  overflow: hidden;
-  clip: rect(0, 0, 0, 0);
-  white-space: nowrap;
-  border: 0;
+  display: flex;
+  width: 100%;
 }
 
 .binder-builder__jump-select {
@@ -113,13 +97,21 @@
   font: inherit;
   font-size: 14px;
   cursor: pointer;
-  min-width: 180px;
+  width: 100%;
+  min-width: 0;
   outline: none;
   transition: border-color 0.15s;
+}
 
-  @media (max-width: 1024px) {
-    min-width: 140px;
-  }
+.binder-builder__jump-sr {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
 }
 
 .binder-builder__jump-select:focus-visible {
@@ -140,8 +132,39 @@
   flex: 1;
   min-width: 0;
   display: flex;
-  align-items: center;
+  align-items: stretch;
   gap: 14px;
+}
+
+.binder-builder__spread-col {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-width: 0;
+  gap: 8px;
+}
+
+.binder-builder__spread-col .binder-spread {
+  width: 100%;
+}
+
+.binder-builder__aside {
+  flex-shrink: 0;
+  width: 220px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  align-self: flex-start;
+}
+
+.binder-builder__aside .binder-sidebar {
+  width: 100%;
+}
+
+.binder-builder__add-page-wrap {
+  display: flex;
+  align-items: center;
+  flex-shrink: 0;
 }
 
 /* "+" add page button */
