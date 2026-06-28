@@ -2,8 +2,8 @@
   display: flex;
   flex-direction: column;
   gap: 20px;
-  width: 100%;
-  max-width: 65%;
+  width: fit-content;
+  max-width: 100%;
   margin: 0 auto;
 }
 
@@ -139,13 +139,13 @@
 .binder-builder__spread-col {
   display: flex;
   flex-direction: column;
-  flex: 1;
+  width: fit-content;
   min-width: 0;
   gap: 8px;
 }
 
 .binder-builder__spread-col .binder-spread {
-  width: 100%;
+  width: fit-content;
 }
 
 .binder-builder__aside {
