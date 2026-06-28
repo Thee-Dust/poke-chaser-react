@@ -53,7 +53,7 @@ export function DashboardPage() {
   }, [data, page, sort])
 
   return (
-    <div className="page">
+    <div className="page page--wide">
       <div className="page__header">
         <h1>Browse Sets</h1>
         <SortSelect

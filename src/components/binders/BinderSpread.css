@@ -117,10 +117,11 @@
   border-radius: 5px;
   overflow: hidden;
   position: relative;
+  box-sizing: border-box;
 }
 
 .binder-slot--empty {
-  border: 1.5px dashed var(--border);
+  border: 2px dashed var(--border);
   background: var(--code-bg);
   transition: border-color 0.15s, background 0.15s;
 }

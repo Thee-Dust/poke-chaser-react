@@ -17,7 +17,17 @@
 }
 
 .page {
-  max-width: 100%;
+  max-width: 960px;
+  margin: 0 auto;
+}
+
+.page--wide {
+  max-width: none;
+}
+
+.page__inner {
+  max-width: 960px;
+  margin: 0 auto;
 }
 
 .page__header {

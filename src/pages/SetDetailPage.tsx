@@ -94,7 +94,7 @@ export function SetDetailPage() {
   const cardCount = set?.printed_total ?? set?.total
 
   return (
-    <div className="page">
+    <div className="page page--wide">
       <Breadcrumb
         items={[
           { label: 'Browse Sets', to: '/' },
