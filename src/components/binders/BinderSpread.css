@@ -38,13 +38,50 @@
 }
 
 .binder-spread__cover-name {
+  width: 100%;
   color: rgba(255, 255, 255, 0.9);
+  font: inherit;
   font-size: 20px;
   font-weight: 600;
   text-align: center;
   letter-spacing: -0.3px;
   word-break: break-word;
   line-height: 1.3;
+  cursor: pointer;
+  background: none;
+  border: none;
+  padding: 0;
+}
+
+.binder-spread__cover-name:hover {
+  color: #fff;
+}
+
+.binder-spread__cover-name:focus-visible {
+  outline: 2px solid rgba(255, 255, 255, 0.75);
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+.binder-spread__cover-name-input {
+  width: 100%;
+  font: inherit;
+  font-size: 20px;
+  font-weight: 600;
+  text-align: center;
+  letter-spacing: -0.3px;
+  line-height: 1.3;
+  color: #fff;
+  background: rgba(0, 0, 0, 0.25);
+  border: 1px solid rgba(255, 255, 255, 0.5);
+  border-radius: 6px;
+  padding: 8px 12px;
+  box-sizing: border-box;
+  outline: none;
+}
+
+.binder-spread__cover-name-input:focus {
+  border-color: rgba(255, 255, 255, 0.85);
 }
 
 /* Empty right side */

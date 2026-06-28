@@ -61,9 +61,7 @@
 }
 
 .binder-builder__title-spine {
-  text-align: center;
-  overflow: visible;
-  min-width: 0;
+  width: 6px;
 }
 
 .binder-builder__page-name {
@@ -104,43 +102,6 @@
   max-width: calc(var(--binder-page-width) - 56px);
   text-align: center;
   justify-self: center;
-}
-
-.binder-builder__title {
-  margin: 0;
-  font-size: 28px;
-  font-weight: 600;
-  cursor: default;
-  user-select: none;
-  text-align: center;
-
-  @media (max-width: 1024px) {
-    font-size: 22px;
-  }
-}
-
-.binder-builder__title:hover {
-  color: var(--text-h);
-}
-
-.binder-builder__name-input {
-  font: inherit;
-  font-size: 28px;
-  font-weight: 600;
-  color: var(--text-h);
-  background: var(--bg);
-  border: 1px solid var(--accent);
-  border-radius: 6px;
-  padding: 2px 10px;
-  outline: none;
-  min-width: 180px;
-  max-width: 400px;
-  justify-self: center;
-  text-align: center;
-
-  @media (max-width: 1024px) {
-    font-size: 22px;
-  }
 }
 
 /* Sidebar toggle — visible only on narrow screens */

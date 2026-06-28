@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useState } from 'react'
 import { Navigate, useParams } from 'react-router-dom'
 import type { BinderDetail, BinderPageData, BinderSlotData } from '../api/types'
 import { BinderPageNameEditor } from '../components/binders/BinderPageNameEditor'
@@ -52,12 +52,6 @@ export function BinderBuilderPage() {
   const [currentSpread, setCurrentSpread] = useState(0)
   const [addingPage, setAddingPage] = useState(false)
 
-  // Binder name editing
-  const [editingName, setEditingName] = useState(false)
-  const [editNameValue, setEditNameValue] = useState('')
-  const [savingName, setSavingName] = useState(false)
-  const nameInputRef = useRef<HTMLInputElement>(null)
-
   // Sidebar (mobile)
   const [sidebarOpen, setSidebarOpen] = useState(false)
 
@@ -87,39 +81,6 @@ export function BinderBuilderPage() {
       cancelled = true
     }
   }, [data, activeId, invalidId])
-
-  useEffect(() => {
-    if (editingName) {
-      nameInputRef.current?.focus()
-      nameInputRef.current?.select()
-    }
-  }, [editingName])
-
-  // ---- Binder name ----
-
-  function startEditingName() {
-    setEditNameValue(binder?.name ?? '')
-    setEditingName(true)
-  }
-
-  async function handleSaveName() {
-    const trimmed = editNameValue.trim()
-    if (!trimmed || !binder) { setEditingName(false); return }
-    if (trimmed === binder.name) { setEditingName(false); return }
-    setSavingName(true)
-    try {
-      await data.updateBinder(binder.id, trimmed)
-      setBinder((prev) => (prev ? { ...prev, name: trimmed } : prev))
-      setEditingName(false)
-    } finally {
-      setSavingName(false)
-    }
-  }
-
-  function handleNameKeyDown(e: React.KeyboardEvent<HTMLInputElement>) {
-    if (e.key === 'Enter') void handleSaveName()
-    if (e.key === 'Escape') setEditingName(false)
-  }
 
   // ---- Slot handlers ----
 
@@ -158,6 +119,10 @@ export function BinderBuilderPage() {
         pages: prev.pages.map((p) => (p.id === pageId ? { ...p, name } : p)),
       }
     })
+  }
+
+  function handleBinderRenamed(name: string) {
+    setBinder((prev) => (prev ? { ...prev, name } : prev))
   }
 
   // ---- Add page ----
@@ -228,28 +193,7 @@ export function BinderBuilderPage() {
                 />
               </div>
 
-              <div className="binder-builder__title-spine">
-                {editingName ? (
-                  <input
-                    ref={nameInputRef}
-                    className="binder-builder__name-input"
-                    value={editNameValue}
-                    onChange={(e) => setEditNameValue(e.target.value)}
-                    onBlur={() => void handleSaveName()}
-                    onKeyDown={handleNameKeyDown}
-                    disabled={savingName}
-                    aria-label="Binder name"
-                  />
-                ) : (
-                  <h1
-                    className="binder-builder__title"
-                    onDoubleClick={startEditingName}
-                    title="Double-click to rename"
-                  >
-                    {binder.name}
-                  </h1>
-                )}
-              </div>
+              <div className="binder-builder__title-spine" aria-hidden="true" />
 
               <div className="binder-builder__title-page binder-builder__title-page--right">
                 <BinderPageNameEditor
@@ -278,6 +222,7 @@ export function BinderBuilderPage() {
               cols={binder.cols}
               onSlotUpdated={handleSlotUpdated}
               onSlotCleared={handleSlotCleared}
+              onBinderRenamed={handleBinderRenamed}
             />
           </div>
           <div className="binder-builder__add-page-wrap">
