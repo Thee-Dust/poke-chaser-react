@@ -158,6 +158,12 @@
 
 .binder-slot--filled {
   border: 1px solid var(--border);
+  cursor: grab;
+}
+
+.binder-slot--filled:active,
+.binder-slot--dragging {
+  cursor: grabbing;
 }
 
 .binder-slot__img {
@@ -165,6 +171,7 @@
   height: 100%;
   object-fit: cover;
   display: block;
+  cursor: inherit;
 }
 
 /* Trash button — shown on hover */

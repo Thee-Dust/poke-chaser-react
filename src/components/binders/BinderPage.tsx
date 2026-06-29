@@ -1,5 +1,5 @@
 import type { BinderPageData, BinderSlotData } from '../../api/types'
-import { BinderSlot } from './BinderSlot'
+import { BinderSlot, type BinderSlotMoveHandler } from './BinderSlot'
 
 type BinderPageProps = {
   binderId: number
@@ -8,6 +8,7 @@ type BinderPageProps = {
   cols: number
   onSlotUpdated: (pageId: number, position: number, slot: BinderSlotData) => void
   onSlotCleared: (pageId: number, position: number) => void
+  onSlotMoved: BinderSlotMoveHandler
 }
 
 export function BinderPage({
@@ -16,6 +17,7 @@ export function BinderPage({
   cols,
   onSlotUpdated,
   onSlotCleared,
+  onSlotMoved,
 }: BinderPageProps) {
   return (
     <div className="binder-page-wrap">
@@ -34,6 +36,7 @@ export function BinderPage({
               card={slot?.card ?? null}
               onSlotUpdated={onSlotUpdated}
               onSlotCleared={onSlotCleared}
+              onSlotMoved={onSlotMoved}
             />
           )
         })}

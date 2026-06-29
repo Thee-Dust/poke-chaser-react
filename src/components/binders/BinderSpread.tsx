@@ -1,6 +1,7 @@
 import type { BinderPageData, BinderSlotData } from '../../api/types'
 import { BinderCoverNameEditor } from './BinderCoverNameEditor'
 import { BinderPage } from './BinderPage'
+import type { BinderSlotMoveHandler } from './BinderSlot'
 import './BinderSpread.css'
 
 type BinderSpreadProps = {
@@ -12,6 +13,7 @@ type BinderSpreadProps = {
   cols: number
   onSlotUpdated: (pageId: number, position: number, slot: BinderSlotData) => void
   onSlotCleared: (pageId: number, position: number) => void
+  onSlotMoved: BinderSlotMoveHandler
   onBinderRenamed: (name: string) => void
 }
 
@@ -24,9 +26,10 @@ export function BinderSpread({
   cols,
   onSlotUpdated,
   onSlotCleared,
+  onSlotMoved,
   onBinderRenamed,
 }: BinderSpreadProps) {
-  const pageProps = { binderId, rows, cols, onSlotUpdated, onSlotCleared }
+  const pageProps = { binderId, rows, cols, onSlotUpdated, onSlotCleared, onSlotMoved }
 
   return (
     <div className="binder-spread">

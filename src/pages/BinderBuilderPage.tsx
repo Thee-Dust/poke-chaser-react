@@ -1,10 +1,11 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { Navigate, useParams } from 'react-router-dom'
 import type { BinderDetail, BinderPageData, BinderSlotData } from '../api/types'
 import { BinderPageNameEditor } from '../components/binders/BinderPageNameEditor'
 import { getPageDisplayName } from '../components/binders/binderPageLabels'
 import { BinderSidebar } from '../components/binders/BinderSidebar'
 import { BinderSpread } from '../components/binders/BinderSpread'
+import type { BinderSlotMoveHandler } from '../components/binders/BinderSlot'
 import { Breadcrumb } from '../components/layout/Breadcrumb'
 import { useData } from '../providers/DataProviderContext'
 import './BinderBuilderPage.css'
@@ -42,6 +43,16 @@ function getSpreadLabel(spread: number, pages: BinderPageData[]): string {
   return 'Cover'
 }
 
+type PendingSlotWrite = {
+  pageId: number
+  position: number
+  cardId: string | null
+}
+
+function getSlotWriteKey(pageId: number, position: number) {
+  return `${pageId}:${position}`
+}
+
 export function BinderBuilderPage() {
   const { binderId } = useParams<{ binderId: string }>()
   const data = useData()
@@ -54,6 +65,8 @@ export function BinderBuilderPage() {
   // Navigation
   const [currentSpread, setCurrentSpread] = useState(0)
   const [addingPage, setAddingPage] = useState(false)
+  const pendingSlotWritesRef = useRef<Map<string, PendingSlotWrite>>(new Map())
+  const slotWriteTimerRef = useRef<number | null>(null)
 
   // Sidebar (mobile)
   const [sidebarOpen, setSidebarOpen] = useState(false)
@@ -85,7 +98,57 @@ export function BinderBuilderPage() {
     }
   }, [data, activeId, invalidId])
 
+  useEffect(() => {
+    return () => {
+      if (slotWriteTimerRef.current != null) {
+        window.clearTimeout(slotWriteTimerRef.current)
+      }
+    }
+  }, [])
+
   // ---- Slot handlers ----
+
+  async function flushPendingSlotWrites() {
+    if (slotWriteTimerRef.current != null) {
+      window.clearTimeout(slotWriteTimerRef.current)
+      slotWriteTimerRef.current = null
+    }
+
+    const writes = Array.from(pendingSlotWritesRef.current.values())
+    if (writes.length === 0) return
+
+    pendingSlotWritesRef.current.clear()
+
+    try {
+      await Promise.all(
+        writes.map((write) => {
+          if (write.cardId) {
+            return data.setSlotCard(activeId, write.pageId, write.position, write.cardId)
+          }
+          return data.clearSlotCard(activeId, write.pageId, write.position)
+        }),
+      )
+    } catch {
+      try {
+        const latest = await data.getBinder(activeId)
+        setBinder(latest ?? null)
+      } catch {
+        setError('Failed to save binder slot changes.')
+      }
+    }
+  }
+
+  function queueSlotWrite(write: PendingSlotWrite) {
+    pendingSlotWritesRef.current.set(getSlotWriteKey(write.pageId, write.position), write)
+
+    if (slotWriteTimerRef.current != null) {
+      window.clearTimeout(slotWriteTimerRef.current)
+    }
+
+    slotWriteTimerRef.current = window.setTimeout(() => {
+      void flushPendingSlotWrites()
+    }, 400)
+  }
 
   function handleSlotUpdated(pageId: number, position: number, slot: BinderSlotData) {
     setBinder((prev) => {
@@ -109,6 +172,55 @@ export function BinderBuilderPage() {
         pages: prev.pages.map((p) => {
           if (p.id !== pageId) return p
           return { ...p, slots: p.slots.filter((s) => s.position !== position) }
+        }),
+      }
+    })
+  }
+
+  const handleSlotMoved: BinderSlotMoveHandler = (source, target) => {
+    if (source.pageId === target.pageId && source.position === target.position) return
+
+    setBinder((prev) => {
+      if (!prev) return prev
+
+      const sourcePage = prev.pages.find((p) => p.id === source.pageId)
+      const targetPage = prev.pages.find((p) => p.id === target.pageId)
+      const sourceSlot = sourcePage?.slots.find((s) => s.position === source.position)
+      const targetSlot = targetPage?.slots.find((s) => s.position === target.position)
+
+      if (!sourcePage || !targetPage || !sourceSlot) return prev
+
+      queueSlotWrite({
+        pageId: source.pageId,
+        position: source.position,
+        cardId: targetSlot?.card.id ?? null,
+      })
+      queueSlotWrite({
+        pageId: target.pageId,
+        position: target.position,
+        cardId: sourceSlot.card.id,
+      })
+
+      return {
+        ...prev,
+        pages: prev.pages.map((page) => {
+          if (page.id !== source.pageId && page.id !== target.pageId) return page
+
+          const slots = page.slots.filter((slot) => {
+            if (page.id === source.pageId && slot.position === source.position) return false
+            if (page.id === target.pageId && slot.position === target.position) return false
+            return true
+          })
+
+          if (page.id === target.pageId) {
+            slots.push({ ...sourceSlot, position: target.position })
+          }
+
+          if (targetSlot && page.id === source.pageId) {
+            slots.push({ ...targetSlot, position: source.position })
+          }
+
+          return { ...page, slots }
         }),
       }
     })
@@ -234,6 +346,7 @@ export function BinderBuilderPage() {
                 cols={binder.cols}
                 onSlotUpdated={handleSlotUpdated}
                 onSlotCleared={handleSlotCleared}
+                onSlotMoved={handleSlotMoved}
                 onBinderRenamed={handleBinderRenamed}
               />
             </div>
