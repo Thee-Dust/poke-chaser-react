@@ -256,10 +256,11 @@ export function BinderBuilderPage() {
 
         <aside className="binder-builder__rail">
           <label className="binder-builder__jump-label">
-            <span className="binder-builder__jump-sr">Jump to</span>
+            <span className="binder-builder__jump-title">Current page</span>
             <select
               className="binder-builder__jump-select"
               value={clampedSpread}
+              aria-label="Jump to page"
               onChange={(e) => setCurrentSpread(Number(e.target.value))}
             >
               {Array.from({ length: spreads }).map((_, i) => (
