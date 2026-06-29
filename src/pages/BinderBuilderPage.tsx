@@ -171,12 +171,11 @@ export function BinderBuilderPage() {
 
   return (
     <div className="binder-builder">
-      <div className="binder-builder__header">
-        <Breadcrumb items={[{ label: 'Binders', to: '/binders' }, { label: binder.name }]} />
-      </div>
-
       <div className="binder-builder__body">
         <div className="binder-builder__main">
+          <div className="binder-builder__header">
+            <Breadcrumb items={[{ label: 'Binders', to: '/binders' }, { label: binder.name }]} />
+          </div>
           <button
             type="button"
             className="btn binder-builder__sidebar-toggle"
