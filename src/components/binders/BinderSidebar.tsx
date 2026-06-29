@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import type { Card, CollectionSummary } from '../../api/types'
+import { Pagination } from '../ui/Pagination'
 import { useData } from '../../providers/DataProviderContext'
 import './BinderSidebar.css'
 
@@ -37,9 +38,14 @@ function CardThumb({ card }: { card: Card }) {
 
 function CollectionSection() {
   const data = useData()
+  const thumbsRef = useRef<HTMLDivElement>(null)
   const [collections, setCollections] = useState<CollectionSummary[]>([])
   const [selectedId, setSelectedId] = useState<number | null>(null)
   const [cards, setCards] = useState<Card[]>([])
+  const [page, setPage] = useState(1)
+  const [pages, setPages] = useState(1)
+  const [query, setQuery] = useState('')
+  const [searchQuery, setSearchQuery] = useState('')
   const [loadingCollections, setLoadingCollections] = useState(true)
   const [loadingCards, setLoadingCards] = useState(false)
 
@@ -62,15 +68,27 @@ function CollectionSection() {
   }, [data])
 
   useEffect(() => {
+    const trimmed = query.trim()
+    const delay = trimmed ? 400 : 0
+
+    const timer = setTimeout(() => {
+      setSearchQuery(trimmed)
+    }, delay)
+
+    return () => clearTimeout(timer)
+  }, [query])
+
+  useEffect(() => {
     if (selectedId == null) return
     let cancelled = false
     async function load() {
       setLoadingCards(true)
       setCards([])
       try {
-        const detail = await data.getCollection(selectedId!)
-        if (!cancelled && detail) {
-          setCards(detail.items.map((item) => item.card))
+        const result = await data.getCollectionCards(selectedId!, page, 'name_asc', searchQuery)
+        if (!cancelled) {
+          setCards(result.cards)
+          setPages(result.pages)
         }
       } finally {
         if (!cancelled) setLoadingCards(false)
@@ -78,7 +96,23 @@ function CollectionSection() {
     }
     load()
     return () => { cancelled = true }
-  }, [data, selectedId])
+  }, [data, selectedId, page, searchQuery])
+
+  useEffect(() => {
+    thumbsRef.current?.scrollTo(0, 0)
+  }, [page, searchQuery])
+
+  function handleQueryChange(value: string) {
+    setQuery(value)
+    setPage(1)
+  }
+
+  function handleCollectionChange(e: React.ChangeEvent<HTMLSelectElement>) {
+    setSelectedId(Number(e.target.value))
+    setPage(1)
+    setQuery('')
+    setSearchQuery('')
+  }
 
   return (
     <div className="binder-sidebar__section">
@@ -92,7 +126,7 @@ function CollectionSection() {
         <select
           className="binder-sidebar__select"
           value={selectedId ?? ''}
-          onChange={(e) => setSelectedId(Number(e.target.value))}
+          onChange={handleCollectionChange}
         >
           {collections.map((c) => (
             <option key={c.id} value={c.id}>
@@ -102,72 +136,33 @@ function CollectionSection() {
         </select>
       )}
 
+      {selectedId != null && !loadingCollections && collections.length > 0 && (
+        <input
+          type="search"
+          className="binder-sidebar__search-input"
+          placeholder="Search cards…"
+          value={query}
+          onChange={(e) => handleQueryChange(e.target.value)}
+          autoComplete="off"
+        />
+      )}
+
       {loadingCards ? (
         <p className="binder-sidebar__loading">Loading cards…</p>
       ) : cards.length > 0 ? (
-        <div className="binder-sidebar__thumbs">
-          {cards.map((card) => (
-            <CardThumb key={card.id} card={card} />
-          ))}
+        <div className="binder-sidebar__cards-panel">
+          <div ref={thumbsRef} className="binder-sidebar__thumbs">
+            {cards.map((card) => (
+              <CardThumb key={card.id} card={card} />
+            ))}
+          </div>
+          <Pagination page={page} pages={pages} onPageChange={setPage} />
         </div>
       ) : selectedId != null && !loadingCollections ? (
-        <p className="binder-sidebar__empty">No cards in this collection.</p>
+        <p className="binder-sidebar__empty">
+          {searchQuery ? 'No matching cards.' : 'No cards in this collection.'}
+        </p>
       ) : null}
-    </div>
-  )
-}
-
-function SearchSection() {
-  const data = useData()
-  const [query, setQuery] = useState('')
-  const [results, setResults] = useState<Card[]>([])
-  const [loading, setLoading] = useState(false)
-
-  useEffect(() => {
-    const trimmed = query.trim()
-    const delay = trimmed ? 400 : 0
-
-    const timer = setTimeout(async () => {
-      if (!trimmed) {
-        setResults([])
-        return
-      }
-      setLoading(true)
-      try {
-        const result = await data.searchCards(trimmed)
-        setResults(result.cards)
-      } catch {
-        setResults([])
-      } finally {
-        setLoading(false)
-      }
-    }, delay)
-
-    return () => clearTimeout(timer)
-  }, [data, query])
-
-  return (
-    <div className="binder-sidebar__section">
-      <p className="binder-sidebar__section-title">Search Cards</p>
-      <input
-        type="search"
-        className="binder-sidebar__search-input"
-        placeholder="Card name…"
-        value={query}
-        onChange={(e) => setQuery(e.target.value)}
-        autoComplete="off"
-      />
-      {loading && <p className="binder-sidebar__loading">Searching…</p>}
-      {!loading && results.length > 0 && (
-        <div className="binder-sidebar__thumbs">
-          {results.map((card) => (
-            <CardThumb key={card.id} card={card} />
-          ))}
-        </div>
-      )}
-      {!loading && query.trim() && results.length === 0 && (
-        <p className="binder-sidebar__empty">No results.</p>
-      )}
     </div>
   )
 }
@@ -209,7 +204,6 @@ export function BinderSidebar({ isOpen, onClose }: BinderSidebarProps) {
           </div>
         )}
         <CollectionSection />
-        <SearchSection />
       </aside>
     </>
   )

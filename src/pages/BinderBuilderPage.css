@@ -1,5 +1,6 @@
 .binder-builder {
   flex: 1;
+  min-height: 0;
   display: flex;
   flex-direction: column;
   width: 100%;
@@ -145,6 +146,7 @@
 
 .binder-builder__body {
   flex: 1;
+  min-height: 0;
   display: flex;
   align-items: stretch;
   width: 100%;
@@ -230,6 +232,8 @@
   background: var(--code-bg);
   margin: 0;
   align-self: stretch;
+  min-height: 0;
+  overflow: hidden;
 
   @media (max-width: 900px) {
     width: 0;
@@ -250,6 +254,10 @@
 
 .binder-builder__rail .binder-sidebar {
   width: 100%;
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
 }
 
 /* Spread + add-page button */

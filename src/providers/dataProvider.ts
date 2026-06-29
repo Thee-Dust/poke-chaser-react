@@ -74,6 +74,30 @@ async function getCollection(id: number, sort = 'number_asc'): Promise<Collectio
   return json
 }
 
+async function getCollectionCards(
+  collectionId: number,
+  page = 1,
+  sort = 'name_asc',
+  search = '',
+): Promise<{ cards: Card[]; pages: number }> {
+  const params = new URLSearchParams()
+  params.set('page', String(page))
+  params.set('sort', sort)
+  const normalized = search.trim()
+  if (normalized) {
+    params.set('search', normalized)
+  }
+
+  const { json } = await fetchJson<any>(
+    getUrl(`collections/${collectionId}/cards/?${params.toString()}`),
+  )
+
+  return {
+    cards: json.results ?? [],
+    pages: json.meta?.pagination?.pages ?? 1,
+  }
+}
+
 async function createCollection(name: string): Promise<CollectionSummary> {
   await ensureCsrf()
   const { json } = await fetchJson<{ id: number; name: string; is_default: boolean }>(
@@ -218,6 +242,7 @@ export const dataProvider = {
   getCard,
   getCollections,
   getCollection,
+  getCollectionCards,
   createCollection,
   addCardToCollection,
   addPurchase,
