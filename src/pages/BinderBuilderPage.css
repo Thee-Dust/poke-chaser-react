@@ -2,9 +2,9 @@
   display: flex;
   flex-direction: column;
   gap: 20px;
-  width: fit-content;
+  width: 100%;
   max-width: 100%;
-  margin: 0 auto;
+  margin: 0;
 }
 
 .binder-builder__header {
@@ -104,9 +104,26 @@
   justify-self: center;
 }
 
+.binder-builder__body {
+  display: flex;
+  align-items: stretch;
+  width: 100%;
+}
+
+.binder-builder__main {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  padding: 0 24px 24px 0;
+}
+
 /* Sidebar toggle — visible only on narrow screens */
 .binder-builder__sidebar-toggle {
   display: none;
+  align-self: flex-start;
 
   @media (max-width: 900px) {
     display: inline-flex;
@@ -124,6 +141,10 @@
 .binder-builder__jump-label {
   display: flex;
   width: 100%;
+
+  @media (max-width: 900px) {
+    display: none;
+  }
 }
 
 .binder-builder__jump-select {
@@ -158,17 +179,44 @@
   outline-offset: 1px;
 }
 
-/* Workspace row: spread-wrap + sidebar */
-.binder-builder__workspace {
+.binder-builder__rail {
+  flex-shrink: 0;
+  width: 280px;
   display: flex;
-  align-items: flex-start;
-  gap: 20px;
+  flex-direction: column;
+  gap: 16px;
+  padding: 0 24px 24px 20px;
+  border-left: 1px solid var(--border);
+  background: var(--code-bg);
+  margin: 0 -24px 0 0;
+
+  @media (max-width: 900px) {
+    width: 0;
+    min-width: 0;
+    padding: 0;
+    margin: 0;
+    border: none;
+    background: transparent;
+    overflow: visible;
+  }
+}
+
+@media (max-width: 640px) {
+  .binder-builder__rail {
+    margin: 0 -16px 0 0;
+  }
+
+  .binder-builder__main {
+    padding: 0 16px 24px 0;
+  }
+}
+
+.binder-builder__rail .binder-sidebar {
+  width: 100%;
 }
 
 /* Spread + add-page button */
 .binder-builder__spread-wrap {
-  flex: 1;
-  min-width: 0;
   display: flex;
   align-items: stretch;
   gap: 14px;
@@ -185,19 +233,6 @@
 
 .binder-builder__spread-col .binder-spread {
   width: fit-content;
-}
-
-.binder-builder__aside {
-  flex-shrink: 0;
-  width: 220px;
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-  align-self: flex-start;
-}
-
-.binder-builder__aside .binder-sidebar {
-  width: 100%;
 }
 
 .binder-builder__add-page-wrap {
