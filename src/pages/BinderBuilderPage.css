@@ -90,13 +90,36 @@
   background: none;
   border: none;
   max-width: calc(var(--binder-page-width) - 56px);
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
+}
+
+.binder-builder__page-name-text {
+  min-width: 0;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
 
+.binder-builder__page-name-edit {
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--accent);
+  border-radius: 4px;
+  padding: 2px;
+  transition: background 0.15s;
+}
+
 .binder-builder__page-name:hover {
   color: var(--text-h);
+}
+
+.binder-builder__page-name:hover .binder-builder__page-name-edit {
+  background: var(--accent-bg);
 }
 
 .binder-builder__page-name:focus-visible {

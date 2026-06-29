@@ -70,8 +70,14 @@ export function BinderCoverNameEditor({
       className="binder-spread__cover-name"
       onClick={startEditing}
       title="Click to rename"
+      aria-label={`Rename binder: ${name}`}
     >
-      {name}
+      <span className="binder-spread__cover-name-text">{name}</span>
+      <span className="binder-spread__cover-name-edit" aria-hidden="true">
+        <svg viewBox="0 0 16 16" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+          <path d="M11.5 2.5a2.121 2.121 0 1 1 3 3L5 15H1v-4L11.5 2.5Z" />
+        </svg>
+      </span>
     </button>
   )
 }

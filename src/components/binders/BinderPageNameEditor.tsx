@@ -80,8 +80,14 @@ export function BinderPageNameEditor({
       className={className}
       onClick={startEditing}
       title="Click to rename"
+      aria-label={`Rename page: ${displayName}`}
     >
-      {displayName}
+      <span className="binder-builder__page-name-text">{displayName}</span>
+      <span className="binder-builder__page-name-edit" aria-hidden="true">
+        <svg viewBox="0 0 16 16" width="14" height="14" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+          <path d="M11.5 2.5a2.121 2.121 0 1 1 3 3L5 15H1v-4L11.5 2.5Z" />
+        </svg>
+      </span>
     </button>
   )
 }
