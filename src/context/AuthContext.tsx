@@ -18,6 +18,8 @@ type AuthContextValue = {
   loading: boolean
   login: (identifier: string, password: string) => Promise<void>
   register: (username: string, email: string, password: string) => Promise<void>
+  requestPasswordReset: (email: string) => Promise<string>
+  confirmPasswordReset: (uid: string, token: string, password: string) => Promise<void>
   logout: () => Promise<void>
   authModalOpen: boolean
   authModalMode: AuthModalMode
@@ -26,6 +28,45 @@ type AuthContextValue = {
 }
 
 const AuthContext = createContext<AuthContextValue | null>(null)
+
+function getCsrfToken(): string {
+  const match = document.cookie.match(/(?:^|;\s*)csrftoken=([^;]+)/)
+  return match ? decodeURIComponent(match[1]) : ''
+}
+
+function extractApiError(json: unknown, fallback: string): string {
+  if (typeof json !== 'object' || json === null) return fallback
+  const obj = json as Record<string, unknown>
+  if (typeof obj.detail === 'string') return obj.detail
+  const nonField = obj.non_field_errors
+  if (Array.isArray(nonField) && typeof nonField[0] === 'string') return nonField[0]
+  for (const value of Object.values(obj)) {
+    if (Array.isArray(value) && typeof value[0] === 'string') return value[0]
+  }
+  return fallback
+}
+
+async function postAuthJson<T>(route: string, body: unknown): Promise<T> {
+  await ensureCsrf()
+  const headers = new Headers()
+  headers.set('Accept', 'application/json')
+  headers.set('Content-Type', 'application/json')
+  const csrf = getCsrfToken()
+  if (csrf) headers.set('X-CSRFToken', csrf)
+
+  const response = await fetch(getUrl(route), {
+    method: 'POST',
+    headers,
+    credentials: 'include',
+    body: JSON.stringify(body),
+  })
+  const text = await response.text()
+  const json = text ? JSON.parse(text) : {}
+  if (!response.ok) {
+    throw new Error(extractApiError(json, response.statusText))
+  }
+  return json as T
+}
 
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null)
@@ -67,6 +108,18 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setUser(null)
   }, [])
 
+  const requestPasswordReset = useCallback(async (email: string) => {
+    const json = await postAuthJson<{ detail: string }>('auth/password-reset/', { email })
+    return json.detail
+  }, [])
+
+  const confirmPasswordReset = useCallback(
+    async (uid: string, token: string, password: string) => {
+      await postAuthJson('auth/password-reset/confirm/', { uid, token, password })
+    },
+    [],
+  )
+
   const openAuthModal = useCallback((mode: AuthModalMode = 'login') => {
     setAuthModalMode(mode)
     setAuthModalOpen(true)
@@ -82,6 +135,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       loading,
       login,
       register,
+      requestPasswordReset,
+      confirmPasswordReset,
       logout,
       authModalOpen,
       authModalMode,
@@ -93,6 +148,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       loading,
       login,
       register,
+      requestPasswordReset,
+      confirmPasswordReset,
       logout,
       authModalOpen,
       authModalMode,

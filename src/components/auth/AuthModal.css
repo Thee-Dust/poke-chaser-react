@@ -70,6 +70,20 @@
   border-bottom-color: var(--accent);
 }
 
+.auth-modal__title {
+  margin: 0 0 8px;
+  font-size: 20px;
+  font-weight: 600;
+  color: var(--text-h);
+}
+
+.auth-modal__helper {
+  margin: 0 0 24px;
+  font-size: 14px;
+  color: var(--text);
+  line-height: 1.5;
+}
+
 .auth-modal__form {
   display: flex;
   flex-direction: column;
@@ -119,6 +133,47 @@
   border: 1px solid rgba(220, 38, 38, 0.2);
   border-radius: 6px;
   padding: 8px 12px;
+}
+
+.auth-modal__success {
+  margin: 0;
+  font-size: 14px;
+  color: var(--text-h);
+  background: var(--accent-bg);
+  border: 1px solid var(--accent-border);
+  border-radius: 6px;
+  padding: 8px 12px;
+}
+
+.auth-modal__forgot-link {
+  align-self: flex-end;
+  background: none;
+  border: none;
+  font: inherit;
+  font-size: 13px;
+  color: var(--accent);
+  cursor: pointer;
+  padding: 0;
+  margin-top: -8px;
+}
+
+.auth-modal__forgot-link:hover {
+  text-decoration: underline;
+}
+
+.auth-modal__back-link {
+  align-self: center;
+  background: none;
+  border: none;
+  font: inherit;
+  font-size: 14px;
+  color: var(--accent);
+  cursor: pointer;
+  padding: 0;
+}
+
+.auth-modal__back-link:hover {
+  text-decoration: underline;
 }
 
 .auth-modal .btn--primary {

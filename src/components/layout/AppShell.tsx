@@ -1,4 +1,5 @@
 import { Outlet, useNavigate, useSearchParams } from 'react-router-dom'
+import { useAuth } from '../../context/AuthContext'
 import { AuthModal } from '../auth/AuthModal'
 import { AppHeader } from './AppHeader'
 import './AppShell.css'
@@ -6,6 +7,7 @@ import './AppShell.css'
 export function AppShell() {
   const navigate = useNavigate()
   const [searchParams] = useSearchParams()
+  const { authModalOpen } = useAuth()
   const searchQuery = searchParams.get('q') ?? ''
 
   function handleSearchSubmit(query: string) {
@@ -23,7 +25,7 @@ export function AppShell() {
       <main className="app-shell__main">
         <Outlet />
       </main>
-      <AuthModal />
+      {authModalOpen && <AuthModal />}
     </div>
   )
 }
