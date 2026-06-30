@@ -1,0 +1,13 @@
+.binder-spread-scaler {
+  max-height: 75svh;
+  width: fit-content;
+  overflow: hidden;
+}
+
+.binder-spread-scaler--fitted {
+  flex: 0 0 auto;
+}
+
+.binder-spread-scaler__inner {
+  transform-origin: top left;
+}

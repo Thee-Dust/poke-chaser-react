@@ -1,0 +1,46 @@
+import type { BinderPageData, BinderSlotData } from '../../api/types'
+import { BinderSlot, type BinderSlotMoveHandler } from './BinderSlot'
+
+type BinderPageProps = {
+  binderId: number
+  page: BinderPageData
+  rows: number
+  cols: number
+  onSlotUpdated: (pageId: number, position: number, slot: BinderSlotData) => void
+  onSlotCleared: (pageId: number, position: number) => void
+  onSlotMoved: BinderSlotMoveHandler
+}
+
+export function BinderPage({
+  binderId,
+  page,
+  cols,
+  onSlotUpdated,
+  onSlotCleared,
+  onSlotMoved,
+}: BinderPageProps) {
+  return (
+    <div className="binder-page-wrap">
+      <div
+        className="binder-page"
+        style={{ '--binder-cols': cols } as React.CSSProperties}
+      >
+        {Array.from({ length: page.capacity }).map((_, pos) => {
+          const slot = page.slots.find((s) => s.position === pos) ?? null
+          return (
+            <BinderSlot
+              key={pos}
+              binderId={binderId}
+              pageId={page.id}
+              position={pos}
+              card={slot?.card ?? null}
+              onSlotUpdated={onSlotUpdated}
+              onSlotCleared={onSlotCleared}
+              onSlotMoved={onSlotMoved}
+            />
+          )
+        })}
+      </div>
+    </div>
+  )
+}

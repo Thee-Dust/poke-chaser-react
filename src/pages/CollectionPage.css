@@ -87,7 +87,7 @@
 
 .collection-detail__market-value-label {
   font-size: 12px;
-  color: var(--text);
+  color: var(--text-muted);
   text-transform: uppercase;
   letter-spacing: 0.06em;
 }
@@ -120,7 +120,7 @@
 
 .collection-detail__summary-label {
   font-size: 12px;
-  color: var(--text);
+  color: var(--text-muted);
   text-transform: uppercase;
   letter-spacing: 0.06em;
 }

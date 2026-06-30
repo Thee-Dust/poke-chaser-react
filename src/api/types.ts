@@ -101,3 +101,37 @@ export type CollectionDetail = CollectionSummary & {
   gain_loss: string
   items: CollectionItem[]
 }
+
+export type BinderSize = {
+  rows: number
+  cols: number
+  label: string
+  capacity: number
+}
+
+export type BinderSlotData = {
+  id: number
+  position: number
+  card: Card
+}
+
+export type BinderPageData = {
+  id: number
+  name: string
+  order: number
+  capacity: number
+  slots: BinderSlotData[]
+}
+
+export type BinderSummary = {
+  id: number
+  name: string
+  rows: number
+  cols: number
+  capacity: number
+  page_count: number
+}
+
+export type BinderDetail = BinderSummary & {
+  pages: BinderPageData[]
+}

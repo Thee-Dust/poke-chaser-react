@@ -1,5 +1,7 @@
 import { Route, Routes } from 'react-router-dom'
 import { AppShell } from '../components/layout/AppShell'
+import { BinderBuilderPage } from '../pages/BinderBuilderPage'
+import { BindersPage } from '../pages/BindersPage'
 import { CardDetailPage } from '../pages/CardDetailPage'
 import { CollectionPage } from '../pages/CollectionPage'
 import { CollectionsPage } from '../pages/CollectionsPage'
@@ -19,6 +21,8 @@ export function AppRoutes() {
         <Route element={<ProtectedRoute />}>
           <Route path="collections" element={<CollectionsPage />} />
           <Route path="collections/:collectionId" element={<CollectionPage />} />
+          <Route path="binders" element={<BindersPage />} />
+          <Route path="binders/:binderId" element={<BinderBuilderPage />} />
         </Route>
       </Route>
     </Routes>

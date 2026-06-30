@@ -107,6 +107,21 @@ export function CardDetailPage() {
       <Breadcrumb items={getCardBreadcrumbItems(searchParams, card)} />
 
       <div className="card-detail">
+        <h1 className="card-detail__title">
+          {card.name}
+          {card.number && <span className="card-detail__title-number"> ({card.number})</span>}
+          {card.set_name && (
+            <span className="card-detail__title-set">
+              {' — '}
+              {card.set_id ? (
+                <Link to={`/sets/${card.set_id}`}>{card.set_name}</Link>
+              ) : (
+                card.set_name
+              )}
+            </span>
+          )}
+        </h1>
+
         <div className="card-detail__image-col">
           {card.images?.large ?? card.images?.small ? (
             <img
@@ -145,21 +160,6 @@ export function CardDetailPage() {
         </div>
 
         <div className="card-detail__meta">
-          <h1>
-            {card.name}
-            {card.number && <span className="card-detail__title-number"> ({card.number})</span>}
-            {card.set_name && (
-              <span className="card-detail__title-set">
-                {' — '}
-                {card.set_id ? (
-                  <Link to={`/sets/${card.set_id}`}>{card.set_name}</Link>
-                ) : (
-                  card.set_name
-                )}
-              </span>
-            )}
-          </h1>
-
           <section className="card-detail__details">
             <h2 className="card-detail__details-heading">Card Details</h2>
 

@@ -141,6 +141,14 @@ export function AppHeader({ searchQuery = '', onSearchSubmit }: AppHeaderProps) 
                 >
                   Collections
                 </NavLink>
+                <NavLink
+                  to="/binders"
+                  className="app-header__menu-item"
+                  role="menuitem"
+                  onClick={() => setMenuOpen(false)}
+                >
+                  Binders
+                </NavLink>
                 <button
                   type="button"
                   className="app-header__menu-item"

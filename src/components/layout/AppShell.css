@@ -17,7 +17,17 @@
 }
 
 .page {
-  max-width: 100%;
+  max-width: 960px;
+  margin: 0 auto;
+}
+
+.page--wide {
+  max-width: none;
+}
+
+.page__inner {
+  max-width: 960px;
+  margin: 0 auto;
 }
 
 .page__header {
@@ -207,8 +217,14 @@
 .card-detail {
   display: grid;
   grid-template-columns: minmax(240px, 320px) 1fr;
-  gap: 32px;
+  gap: 16px 32px;
   align-items: start;
+}
+
+.card-detail__title {
+  grid-column: 1 / -1;
+  margin: 0;
+  text-align: left;
 }
 
 .card-detail__image-col {
@@ -282,6 +298,7 @@
   font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 0.06em;
+  text-align: center;
   color: var(--text);
   background: var(--code-bg);
   border-bottom: 1px solid var(--border);
