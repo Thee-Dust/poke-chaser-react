@@ -69,7 +69,7 @@ function CollectionSection() {
 
   useEffect(() => {
     const trimmed = query.trim()
-    const delay = trimmed ? 400 : 0
+    const delay = trimmed ? 1000 : 0
 
     const timer = setTimeout(() => {
       setSearchQuery(trimmed)
