@@ -13,6 +13,19 @@
   --shadow:
     rgba(0, 0, 0, 0.1) 0 10px 15px -3px, rgba(0, 0, 0, 0.05) 0 4px 6px -2px;
 
+  --binder-cover-from: #e8f1ff;
+  --binder-cover-to: #c7dcff;
+  --binder-cover-text: var(--text-h);
+  --binder-cover-text-muted: var(--accent);
+  --binder-cover-hover-bg: rgba(37, 99, 235, 0.08);
+  --binder-cover-input-bg: rgba(255, 255, 255, 0.65);
+  --binder-cover-input-text: var(--text-h);
+  --binder-cover-input-border: var(--accent-border);
+  --binder-cover-input-focus-border: var(--accent);
+  --binder-cover-focus-outline: var(--accent);
+
+  --binder-spread-border: var(--text);
+
   --sans: system-ui, 'Segoe UI', Roboto, sans-serif;
   --heading: system-ui, 'Segoe UI', Roboto, sans-serif;
   --mono: ui-monospace, Consolas, monospace;
@@ -45,6 +58,19 @@
   --social-bg: rgba(47, 48, 58, 0.5);
   --shadow:
     rgba(0, 0, 0, 0.4) 0 10px 15px -3px, rgba(0, 0, 0, 0.25) 0 4px 6px -2px;
+
+  --binder-cover-from: #1e3a5f;
+  --binder-cover-to: #0d1f38;
+  --binder-cover-text: rgba(255, 255, 255, 0.9);
+  --binder-cover-text-muted: rgba(255, 255, 255, 0.75);
+  --binder-cover-hover-bg: rgba(255, 255, 255, 0.12);
+  --binder-cover-input-bg: rgba(0, 0, 0, 0.25);
+  --binder-cover-input-text: #fff;
+  --binder-cover-input-border: rgba(255, 255, 255, 0.5);
+  --binder-cover-input-focus-border: rgba(255, 255, 255, 0.85);
+  --binder-cover-focus-outline: rgba(255, 255, 255, 0.75);
+
+  --binder-spread-border: var(--border);
 
   color-scheme: dark;
 }
