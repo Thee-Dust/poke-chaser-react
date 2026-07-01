@@ -121,7 +121,6 @@ export function SetDetailPage() {
       )}
 
       {!set && !loadingSet && <h1>Set</h1>}
-      {error && <p className="page__error">{error}</p>}
 
       <div className="page__header page__header--above-list">
         <span />
@@ -134,6 +133,8 @@ export function SetDetailPage() {
           }}
         />
       </div>
+
+      {error && <p className="page__error">{error}</p>}
 
       <CardGrid
         cards={cards}

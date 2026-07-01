@@ -246,7 +246,7 @@ export function CollectionPage() {
         ) : null}
       </div>
 
-      {detail && sortedItems.length > 0 && (
+      {(loading || (detail && sortedItems.length > 0)) && (
         <div className="page__header page__header--above-list">
           <span />
           <SortSelect
