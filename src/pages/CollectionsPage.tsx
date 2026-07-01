@@ -59,7 +59,7 @@ export function CollectionsPage() {
 
   return (
     <div className="page">
-      <div className="page__header">
+      <div className="page__header page__header--centered">
         <h1>My Collections</h1>
       </div>
       {error && <p className="page__error">{error}</p>}

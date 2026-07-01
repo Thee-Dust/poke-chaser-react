@@ -39,6 +39,10 @@
   flex-wrap: wrap;
 }
 
+.page__header--centered {
+  justify-content: center;
+}
+
 .page__header h1 {
   margin: 0;
 }

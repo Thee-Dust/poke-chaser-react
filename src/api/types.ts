@@ -130,6 +130,7 @@ export type BinderSummary = {
   cols: number
   capacity: number
   page_count: number
+  card_count: number
 }
 
 export type BinderDetail = BinderSummary & {

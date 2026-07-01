@@ -41,7 +41,7 @@ export function BindersPage() {
   }, [data])
 
   function handleCreated(binder: BinderSummary) {
-    setBinders((prev) => [...prev, binder])
+    setBinders((prev) => [...prev, { ...binder, page_count: 0, card_count: 0 }])
     setModalOpen(false)
   }
 
@@ -56,7 +56,7 @@ export function BindersPage() {
 
   return (
     <div className="page">
-      <div className="page__header">
+      <div className="page__header page__header--centered">
         <h1>My Binders</h1>
       </div>
 
