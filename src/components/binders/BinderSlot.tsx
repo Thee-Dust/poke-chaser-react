@@ -1,5 +1,6 @@
 import { useRef, useState } from 'react'
 import { createPortal } from 'react-dom'
+import { Link } from 'react-router-dom'
 import type { BinderSlotData, Card } from '../../api/types'
 import { useData } from '../../providers/DataProviderContext'
 import { AddCardToSlotModal } from './AddCardToSlotModal'
@@ -125,6 +126,28 @@ export function BinderSlot({
             alt={card.name}
             loading="lazy"
           />
+          <Link
+            to={`/cards/${card.id}`}
+            className="binder-slot__view"
+            aria-label={`View ${card.name}`}
+            onClick={(e) => e.stopPropagation()}
+            draggable={false}
+          >
+            <svg
+              viewBox="0 0 16 16"
+              width="12"
+              height="12"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="1.5"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              aria-hidden="true"
+            >
+              <path d="M1.5 8s2.5-4.5 6.5-4.5S14.5 8 14.5 8s-2.5 4.5-6.5 4.5S1.5 8 1.5 8z" />
+              <circle cx="8" cy="8" r="2" />
+            </svg>
+          </Link>
           <button
             type="button"
             className="binder-slot__remove"

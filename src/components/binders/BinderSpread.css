@@ -206,11 +206,11 @@
   cursor: inherit;
 }
 
-/* Trash button — shown on hover */
+/* Overlay action buttons — shown on hover */
+.binder-slot__view,
 .binder-slot__remove {
   position: absolute;
   top: 4px;
-  right: 4px;
   z-index: 2;
   display: flex;
   align-items: center;
@@ -218,7 +218,6 @@
   width: 22px;
   height: 22px;
   border-radius: 4px;
-  border: none;
   background: rgba(0, 0, 0, 0.55);
   color: #fff;
   cursor: pointer;
@@ -227,8 +226,23 @@
   transition: opacity 0.15s, background 0.15s;
 }
 
+.binder-slot__view {
+  left: 4px;
+  text-decoration: none;
+}
+
+.binder-slot__remove {
+  right: 4px;
+  border: none;
+}
+
+.binder-slot--filled:hover .binder-slot__view,
 .binder-slot--filled:hover .binder-slot__remove {
   opacity: 1;
+}
+
+.binder-slot__view:hover {
+  background: rgba(0, 0, 0, 0.75);
 }
 
 .binder-slot__remove:hover {
