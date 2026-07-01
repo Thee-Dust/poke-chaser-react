@@ -131,6 +131,74 @@
   color: var(--text-h);
 }
 
+.collection-detail__skeleton {
+  position: relative;
+  overflow: hidden;
+  border-radius: 6px;
+  background: var(--code-bg);
+}
+
+.collection-detail__skeleton::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    90deg,
+    transparent 25%,
+    var(--border) 50%,
+    transparent 75%
+  );
+  background-size: 200% 100%;
+  animation: collection-detail-shimmer 1.5s infinite;
+  opacity: 0.6;
+}
+
+.collection-detail__skeleton--label {
+  width: 80px;
+  height: 12px;
+}
+
+.collection-detail__skeleton--hero {
+  width: 160px;
+  height: 36px;
+}
+
+.collection-detail__summary-stat--skeleton {
+  position: relative;
+  min-height: 72px;
+  border-color: transparent;
+  box-shadow: var(--shadow);
+  overflow: hidden;
+  background:
+    linear-gradient(var(--bg) 0, var(--bg)) 0 60% / 100% 40%,
+    linear-gradient(var(--code-bg) 0, var(--code-bg)) 0 0 / 100% 60%;
+  background-repeat: no-repeat;
+}
+
+.collection-detail__summary-stat--skeleton::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    90deg,
+    transparent 25%,
+    var(--border) 50%,
+    transparent 75%
+  );
+  background-size: 200% 100%;
+  animation: collection-detail-shimmer 1.5s infinite;
+  opacity: 0.6;
+}
+
+@keyframes collection-detail-shimmer {
+  0% {
+    background-position: 200% 0;
+  }
+  100% {
+    background-position: -200% 0;
+  }
+}
+
 .collection-detail__gain-loss--positive {
   color: #16a34a;
 }

@@ -202,35 +202,50 @@ export function CollectionPage() {
       <div className="page__inner">
         {error && <p className="page__error">{error}</p>}
 
-        {detail && (
-          <div className="collection-detail__market-value">
-            <span className="collection-detail__market-value-label">Market Value</span>
-            <span className="collection-detail__market-value-amount">${marketValue.toFixed(2)}</span>
-          </div>
-        )}
+        {loading ? (
+          <>
+            <div className="collection-detail__market-value" aria-busy="true">
+              <div className="collection-detail__skeleton collection-detail__skeleton--label" />
+              <div className="collection-detail__skeleton collection-detail__skeleton--hero" />
+            </div>
+            <div className="collection-detail__summary" aria-busy="true">
+              {Array.from({ length: 4 }).map((_, index) => (
+                <div
+                  key={index}
+                  className="collection-detail__summary-stat collection-detail__summary-stat--skeleton"
+                />
+              ))}
+            </div>
+          </>
+        ) : detail ? (
+          <>
+            <div className="collection-detail__market-value">
+              <span className="collection-detail__market-value-label">Market Value</span>
+              <span className="collection-detail__market-value-amount">${marketValue.toFixed(2)}</span>
+            </div>
 
-        {detail && (
-          <div className="collection-detail__summary">
-            <div className="collection-detail__summary-stat">
-              <span className="collection-detail__summary-label">Cards</span>
-              <span className="collection-detail__summary-value">{detail.card_count}</span>
+            <div className="collection-detail__summary">
+              <div className="collection-detail__summary-stat">
+                <span className="collection-detail__summary-label">Cards</span>
+                <span className="collection-detail__summary-value">{detail.card_count}</span>
+              </div>
+              <div className="collection-detail__summary-stat">
+                <span className="collection-detail__summary-label">Purchased Market Value</span>
+                <span className="collection-detail__summary-value">${purchasedMarketValue.toFixed(2)}</span>
+              </div>
+              <div className="collection-detail__summary-stat">
+                <span className="collection-detail__summary-label">Total Spent</span>
+                <span className="collection-detail__summary-value">${totalSpent.toFixed(2)}</span>
+              </div>
+              <div className="collection-detail__summary-stat">
+                <span className="collection-detail__summary-label">Gain / Loss</span>
+                <span className={`collection-detail__summary-value collection-detail__gain-loss ${gainLossClass}`}>
+                  {gainLoss >= 0 ? '+' : ''}${gainLoss.toFixed(2)}
+                </span>
+              </div>
             </div>
-            <div className="collection-detail__summary-stat">
-              <span className="collection-detail__summary-label">Purchased Market Value</span>
-              <span className="collection-detail__summary-value">${purchasedMarketValue.toFixed(2)}</span>
-            </div>
-            <div className="collection-detail__summary-stat">
-              <span className="collection-detail__summary-label">Total Spent</span>
-              <span className="collection-detail__summary-value">${totalSpent.toFixed(2)}</span>
-            </div>
-            <div className="collection-detail__summary-stat">
-              <span className="collection-detail__summary-label">Gain / Loss</span>
-              <span className={`collection-detail__summary-value collection-detail__gain-loss ${gainLossClass}`}>
-                {gainLoss >= 0 ? '+' : ''}${gainLoss.toFixed(2)}
-              </span>
-            </div>
-          </div>
-        )}
+          </>
+        ) : null}
 
         {!loading && !detail && !error && (
           <p className="page__message">Collection not found.</p>
