@@ -247,7 +247,7 @@ export function CollectionPage() {
       </div>
 
       {detail && sortedItems.length > 0 && (
-        <div className="page__header">
+        <div className="page__header page__header--above-list">
           <span />
           <SortSelect
             options={CARD_SORT_OPTIONS}

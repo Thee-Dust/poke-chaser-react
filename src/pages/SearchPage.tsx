@@ -63,7 +63,7 @@ export function SearchPage() {
 
   return (
     <div className="page page--wide">
-      <div className="page__header">
+      <div className="page__header page__header--above-list">
         <h1>
           {query ? `Search results for "${query}"` : 'Search'}
         </h1>

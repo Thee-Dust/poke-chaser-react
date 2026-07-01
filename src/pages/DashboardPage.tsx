@@ -54,7 +54,7 @@ export function DashboardPage() {
 
   return (
     <div className="page page--wide">
-      <div className="page__header">
+      <div className="page__header page__header--above-list">
         <h1>Browse Sets</h1>
         <SortSelect
           options={SORT_OPTIONS}
