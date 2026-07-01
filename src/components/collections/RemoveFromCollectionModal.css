@@ -1,0 +1,252 @@
+.remove-from-collection-modal__overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  padding: 16px;
+}
+
+.remove-from-collection-modal {
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 32px;
+  width: 100%;
+  max-width: 400px;
+  position: relative;
+  box-shadow: var(--shadow);
+}
+
+.remove-from-collection-modal__close {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  background: none;
+  border: none;
+  font-size: 16px;
+  color: var(--text);
+  cursor: pointer;
+  padding: 4px 8px;
+  border-radius: 6px;
+  line-height: 1;
+}
+
+.remove-from-collection-modal__close:hover {
+  background: var(--border);
+  color: var(--text-h);
+}
+
+.remove-from-collection-modal__title {
+  font-size: 18px;
+  font-weight: 600;
+  color: var(--text-h);
+  margin: 0 0 12px;
+}
+
+.remove-from-collection-modal__message {
+  font-size: 15px;
+  color: var(--text);
+  margin: 0 0 12px;
+  line-height: 1.5;
+}
+
+.remove-from-collection-modal__helper {
+  font-size: 13px;
+  color: var(--text-muted);
+  margin: 0 0 12px;
+  line-height: 1.45;
+}
+
+.remove-from-collection-modal__purchases {
+  margin-bottom: 16px;
+}
+
+.remove-from-collection-modal__purchases-heading {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text-h);
+  margin: 0 0 8px;
+}
+
+.remove-from-collection-modal__purchase-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.remove-from-collection-modal__purchase-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 16px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--bg);
+  cursor: pointer;
+  transition: border-color 0.15s, background 0.15s;
+}
+
+.remove-from-collection-modal__purchase-row--selected {
+  border-color: var(--accent-border);
+  background: var(--accent-bg);
+}
+
+.remove-from-collection-modal__purchase-row--disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.remove-from-collection-modal__purchase-row input {
+  flex-shrink: 0;
+  width: 16px;
+  height: 16px;
+  margin: 0;
+  accent-color: var(--accent);
+  cursor: inherit;
+}
+
+.remove-from-collection-modal__purchase-date {
+  flex: 1;
+  font-size: 14px;
+  color: var(--text-h);
+}
+
+.remove-from-collection-modal__purchase-price {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--accent);
+  flex-shrink: 0;
+}
+
+.remove-from-collection-modal__quantity {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 8px;
+  margin-bottom: 16px;
+}
+
+.remove-from-collection-modal__quantity-text {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text-h);
+}
+
+.remove-from-collection-modal__quantity-stepper {
+  display: inline-flex;
+  align-items: stretch;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.remove-from-collection-modal__quantity-stepper:focus-within {
+  outline: 2px solid var(--accent);
+  outline-offset: 1px;
+}
+
+.remove-from-collection-modal__quantity-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  width: 36px;
+  padding: 0;
+  border: none;
+  border-right: 1px solid var(--border);
+  background: var(--code-bg);
+  color: var(--text-h);
+  font: inherit;
+  font-size: 18px;
+  line-height: 1;
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s;
+}
+
+.remove-from-collection-modal__quantity-btn--plus {
+  border-right: none;
+  border-left: 1px solid var(--border);
+}
+
+.remove-from-collection-modal__quantity-btn:hover:not(:disabled) {
+  background: var(--accent-bg);
+  color: var(--accent);
+}
+
+.remove-from-collection-modal__quantity-btn:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: -2px;
+  z-index: 1;
+}
+
+.remove-from-collection-modal__quantity-btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.remove-from-collection-modal__quantity-input {
+  width: 48px;
+  padding: 8px 4px;
+  border: none;
+  background: var(--bg);
+  color: var(--text-h);
+  font: inherit;
+  font-size: 15px;
+  text-align: center;
+  outline: none;
+  -moz-appearance: textfield;
+  appearance: textfield;
+}
+
+.remove-from-collection-modal__quantity-input::-webkit-outer-spin-button,
+.remove-from-collection-modal__quantity-input::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+.remove-from-collection-modal__actions {
+  display: flex;
+  gap: 8px;
+  justify-content: flex-end;
+  margin-top: 8px;
+}
+
+.remove-from-collection-modal__confirm-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 8px 16px;
+  border-radius: 6px;
+  border: 2px solid #dc2626;
+  background: transparent;
+  color: #dc2626;
+  font: inherit;
+  cursor: pointer;
+  transition: background 0.2s, color 0.2s;
+}
+
+.remove-from-collection-modal__confirm-btn:hover:not(:disabled) {
+  background: #dc2626;
+  color: #fff;
+}
+
+.remove-from-collection-modal__confirm-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.remove-from-collection-modal__error {
+  margin: 0 0 16px;
+  font-size: 14px;
+  color: #dc2626;
+  background: rgba(220, 38, 38, 0.08);
+  border: 1px solid rgba(220, 38, 38, 0.2);
+  border-radius: 6px;
+  padding: 8px 12px;
+}

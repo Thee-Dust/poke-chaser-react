@@ -330,7 +330,6 @@
   color: var(--text);
   font-weight: 500;
   font-size: 13px;
-  align-self: start;
   background: var(--code-bg);
   border-right: 1px solid var(--border);
 }

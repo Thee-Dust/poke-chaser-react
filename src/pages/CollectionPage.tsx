@@ -4,6 +4,7 @@ import type { CollectionDetail, CollectionItem } from '../api/types'
 import { CardGrid } from '../components/cards/CardGrid'
 import { DeleteCollectionModal } from '../components/collections/DeleteCollectionModal'
 import { PurchaseHistoryModal } from '../components/collections/PurchaseHistoryModal'
+import { RemoveFromCollectionModal } from '../components/collections/RemoveFromCollectionModal'
 import { Breadcrumb } from '../components/layout/Breadcrumb'
 import { CARD_SORT_OPTIONS, SortSelect } from '../components/ui/SortSelect'
 import { useData } from '../providers/DataProviderContext'
@@ -30,6 +31,7 @@ export function CollectionPage() {
 
   const [deleteModalOpen, setDeleteModalOpen] = useState(false)
   const [historyItem, setHistoryItem] = useState<CollectionItem | null>(null)
+  const [removeItem, setRemoveItem] = useState<CollectionItem | null>(null)
   const inputRef = useRef<HTMLInputElement>(null)
 
   const activeId = Number(collectionId)
@@ -263,6 +265,7 @@ export function CollectionPage() {
           collectionId={detail?.id}
           collectionName={detail?.name}
           onHistory={setHistoryItem}
+          onRemove={setRemoveItem}
         />
       )}
 
@@ -285,6 +288,19 @@ export function CollectionPage() {
           onClose={() => setHistoryItem(null)}
           onMutated={() => {
             setHistoryItem(null)
+            setRefresh((n) => n + 1)
+          }}
+        />
+      )}
+
+      {removeItem && detail && (
+        <RemoveFromCollectionModal
+          collectionId={detail.id}
+          item={removeItem}
+          collectionName={detail.name}
+          onClose={() => setRemoveItem(null)}
+          onRemoved={() => {
+            setRemoveItem(null)
             setRefresh((n) => n + 1)
           }}
         />

@@ -96,7 +96,7 @@
 
 .card-tile__footer {
   display: flex;
-  align-items: center;
+  align-items: flex-end;
   justify-content: space-between;
   margin-top: auto;
   padding-top: 6px;
@@ -148,11 +148,42 @@
   transform: scale(1.1);
 }
 
+.card-tile__actions {
+  display: flex;
+  align-items: flex-end;
+  gap: 6px;
+  margin-left: auto;
+  flex-shrink: 0;
+}
+
+.card-tile__remove-btn {
+  position: relative;
+  z-index: 1;
+  pointer-events: auto;
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  border: 2px solid var(--border);
+  background: transparent;
+  color: var(--text);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: border-color 0.2s, color 0.2s, background 0.2s;
+}
+
+.card-tile__remove-btn:hover {
+  border-color: rgba(220, 38, 38, 0.5);
+  color: #dc2626;
+  background: rgba(220, 38, 38, 0.08);
+}
+
 .card-tile__history-btn {
   position: relative;
   z-index: 1;
   pointer-events: auto;
-  margin-left: auto;
   width: 26px;
   height: 26px;
   border-radius: 50%;
