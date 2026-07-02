@@ -53,6 +53,17 @@ function getSlotWriteKey(pageId: number, position: number) {
   return `${pageId}:${position}`
 }
 
+function syncCommittedSlotsRef(
+  binder: BinderDetail | null,
+  ref: { current: Map<string, boolean> },
+) {
+  const slotKeys = new Map<string, boolean>()
+  binder?.pages.forEach((p) =>
+    p.slots.forEach((s) => slotKeys.set(getSlotWriteKey(p.id, s.position), true)),
+  )
+  ref.current = slotKeys
+}
+
 export function BinderBuilderPage() {
   const { binderId } = useParams<{ binderId: string }>()
   const data = useData()
@@ -66,6 +77,7 @@ export function BinderBuilderPage() {
   const [currentSpread, setCurrentSpread] = useState(0)
   const [addingPage, setAddingPage] = useState(false)
   const pendingSlotWritesRef = useRef<Map<string, PendingSlotWrite>>(new Map())
+  const committedSlotsRef = useRef<Map<string, boolean>>(new Map())
   const slotWriteTimerRef = useRef<number | null>(null)
 
   // Sidebar (mobile)
@@ -84,7 +96,10 @@ export function BinderBuilderPage() {
       setError(null)
       try {
         const result = await data.getBinder(activeId)
-        if (!cancelled) setBinder(result ?? null)
+        if (!cancelled) {
+          setBinder(result ?? null)
+          syncCommittedSlotsRef(result ?? null, committedSlotsRef)
+        }
       } catch {
         if (!cancelled) setError('Failed to load binder.')
       } finally {
@@ -122,9 +137,15 @@ export function BinderBuilderPage() {
     try {
       await Promise.all(
         writes.map((write) => {
+          const key = getSlotWriteKey(write.pageId, write.position)
           if (write.cardId) {
+            committedSlotsRef.current.set(key, true)
             return data.setSlotCard(activeId, write.pageId, write.position, write.cardId)
           }
+          if (!committedSlotsRef.current.has(key)) {
+            return Promise.resolve()
+          }
+          committedSlotsRef.current.delete(key)
           return data.clearSlotCard(activeId, write.pageId, write.position)
         }),
       )
@@ -132,6 +153,7 @@ export function BinderBuilderPage() {
       try {
         const latest = await data.getBinder(activeId)
         setBinder(latest ?? null)
+        syncCommittedSlotsRef(latest ?? null, committedSlotsRef)
       } catch {
         setError('Failed to save binder slot changes.')
       }
@@ -147,7 +169,7 @@ export function BinderBuilderPage() {
 
     slotWriteTimerRef.current = window.setTimeout(() => {
       void flushPendingSlotWrites()
-    }, 400)
+    }, 1000)
   }
 
   function handleSlotUpdated(pageId: number, position: number, slot: BinderSlotData) {

@@ -38,22 +38,16 @@
 .binder-tile__content {
   position: relative;
   z-index: 0;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding-right: 28px;
   pointer-events: none;
 }
 
-.binder-tile__header {
-  display: flex;
-  justify-content: space-between;
-  align-items: baseline;
-  gap: 16px;
-}
-
-.binder-tile__name-row {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  min-width: 0;
+.binder-tile__info {
   flex: 1;
+  min-width: 0;
 }
 
 .binder-tile__name {
@@ -63,17 +57,20 @@
   min-width: 0;
 }
 
-.binder-tile__size {
+.binder-tile__count {
+  flex-shrink: 0;
   font-size: 14px;
   font-weight: 500;
   color: var(--text-h);
-  flex-shrink: 0;
+  text-align: right;
+  white-space: nowrap;
 }
 
 .binder-tile__delete-btn {
-  position: relative;
+  position: absolute;
+  top: 12px;
+  right: 12px;
   z-index: 1;
-  flex-shrink: 0;
   display: inline-flex;
   align-items: center;
   justify-content: center;

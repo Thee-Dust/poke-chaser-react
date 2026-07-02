@@ -1,73 +1,99 @@
-# React + TypeScript + Vite
+<p align="center">
+  <img src="public/pokechaser-logo-light-mode.png" alt="Poke Chaser" width="320" />
+</p>
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+<h1 align="center">Poke Chaser</h1>
 
-Currently, two official plugins are available:
+<p align="center">
+  A full-stack Pokémon TCG browser and collection manager — browse sets, track owned cards, and organize them in visual binders.
+</p>
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+## Features
 
-## React Compiler
+### Browse & discover
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+- Browse all Pokémon TCG sets with server-side sort (release date, A–Z, Z–A) and pagination
+- Set detail pages with sortable card grids — number, name, price, rarity
+- Card detail — attacks, weaknesses, HP, and direct TCGPlayer / eBay buy links
+- Search the full catalog by card name
 
-## Expanding the ESLint configuration
+### Collections *(authenticated)*
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+- Create and manage multiple named collections
+- Track quantity owned, market value, total spent, and gain/loss per collection
+- Purchase history per card — date, price paid, notes
+- Remove cards with quantity stepper and purchase-aware partial removal
 
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
+### Binders *(authenticated)*
 
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
+- Build visual binders with configurable page layouts (sizes loaded from the API)
+- Drag cards from the sidebar or between slots; open card detail from any filled slot
+- Name binders and individual pages
+- Sidebar page navigation with a spread view that mimics a physical binder
 
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+### UX polish
+
+- Light and dark theme with instant toggle, persisted to `localStorage`
+- Skeleton loading states with shimmer animation on set/card grids and collection stats
+- Responsive layout — search bar stacks on small screens
+- Keyboard accessible — focus rings, modal escape handling, ARIA labels on interactive controls
+
+## Tech stack
+
+| Layer | Tools |
+|-------|--------|
+| UI | React 19, TypeScript, React Router v7 |
+| Styling | Colocated CSS (BEM), CSS custom properties, `[data-theme]` light/dark |
+| Build | Vite |
+| Data | REST API via typed `dataProvider` — Django backend |
+| Auth | Session auth with CSRF handling |
+
+## Architecture highlights
+
+- **Single data layer** — All API calls go through [`src/providers/dataProvider.ts`](src/providers/dataProvider.ts). Pages use `useData()` and never call `fetch` directly; API field names stay snake_case end-to-end.
+- **Design tokens** — Theme colors live in [`src/index.css`](src/index.css) as `var(--*)` custom properties. Switching themes is a `data-theme` attribute change — no runtime style recalculation in components.
+- **Loading UX** — Skeleton tiles mirror real tile layout (two-tone background + shimmer overlay) so grids do not jump when data arrives.
+- **Protected routes** — Collections and binders sit behind [`ProtectedRoute`](src/routes/ProtectedRoute.tsx) with auth context; unauthenticated users are redirected to log in.
+
+## Getting started
+
+**Prerequisites:** Node.js 18+, npm, and the Poke Chaser Django API running (default port `8000`).
+
+```bash
+git clone <repo-url>
+cd poke-chaser-react
+npm install
+cp .env.example .env
+npm run dev
 ```
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+Open the URL Vite prints (typically `http://localhost:5173`).
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
+### Environment
 
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+| Variable | Description |
+|----------|-------------|
+| `VITE_API_BASE_URL` | Base URL of the Django API (default `http://localhost:8000`) |
+
+## Scripts
+
+| Command | Description |
+|---------|-------------|
+| `npm run dev` | Start Vite dev server with HMR |
+| `npm run build` | TypeScript check + production build |
+| `npm run lint` | Run ESLint |
+| `npm run preview` | Serve the production build locally |
+
+## Project structure
+
+```
+src/
+  pages/          Route screens (Dashboard, SetDetail, Collection, BinderBuilder, …)
+  components/     Presentational UI with colocated CSS
+  providers/      dataProvider + React context
+  context/        Auth and theme
+  routes/         AppRoutes, ProtectedRoute
+  api/            Shared TypeScript types (mirror API JSON)
+  utils/          fetch helpers, URL builder
+public/           Static assets (logos, favicon)
 ```

@@ -4,6 +4,7 @@ import type { CollectionDetail, CollectionItem } from '../api/types'
 import { CardGrid } from '../components/cards/CardGrid'
 import { DeleteCollectionModal } from '../components/collections/DeleteCollectionModal'
 import { PurchaseHistoryModal } from '../components/collections/PurchaseHistoryModal'
+import { RemoveFromCollectionModal } from '../components/collections/RemoveFromCollectionModal'
 import { Breadcrumb } from '../components/layout/Breadcrumb'
 import { CARD_SORT_OPTIONS, SortSelect } from '../components/ui/SortSelect'
 import { useData } from '../providers/DataProviderContext'
@@ -30,6 +31,7 @@ export function CollectionPage() {
 
   const [deleteModalOpen, setDeleteModalOpen] = useState(false)
   const [historyItem, setHistoryItem] = useState<CollectionItem | null>(null)
+  const [removeItem, setRemoveItem] = useState<CollectionItem | null>(null)
   const inputRef = useRef<HTMLInputElement>(null)
 
   const activeId = Number(collectionId)
@@ -133,102 +135,117 @@ export function CollectionPage() {
 
   return (
     <div className="page page--wide">
-      <div className="page__inner">
-        <Breadcrumb
-          items={[
-            { label: 'Collections', to: '/collections' },
-            { label: detail?.name ?? 'Collection' },
-          ]}
-        />
+      <Breadcrumb
+        items={[
+          { label: 'Collections', to: '/collections' },
+          { label: detail?.name ?? 'Collection' },
+        ]}
+      />
 
-        <div className="page__header">
-          {editing ? (
-            <div className="collection-detail__rename">
-              <input
-                ref={inputRef}
-                className="collection-detail__rename-input"
-                value={editName}
-                onChange={(e) => setEditName(e.target.value)}
-                onKeyDown={handleKeyDown}
-                aria-label="Collection name"
-                disabled={saving}
-              />
-              <button
-                className="btn btn--primary"
-                onClick={() => void handleSave()}
-                disabled={saving || !editName.trim()}
-              >
-                {saving ? 'Saving…' : 'Save'}
-              </button>
-              <button
-                className="btn"
-                onClick={cancelEditing}
-                disabled={saving}
-              >
-                Cancel
-              </button>
-              {saveError && <span className="collection-detail__save-error">{saveError}</span>}
-            </div>
-          ) : (
-            <>
-              <div className="collection-detail__title">
-                <h1>{detail?.name ?? 'Collection'}</h1>
-                {detail && (
-                  <button
-                    className="collection-detail__edit-btn"
-                    onClick={startEditing}
-                    aria-label="Edit collection name"
-                  >
-                    <svg viewBox="0 0 16 16" width="16" height="16" aria-hidden="true" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-                      <path d="M11.5 2.5a2.121 2.121 0 1 1 3 3L5 15H1v-4L11.5 2.5Z" />
-                    </svg>
-                  </button>
-                )}
-              </div>
-              {detail && !detail.is_default && (
+      <div className="page__header">
+        {editing ? (
+          <div className="collection-detail__rename">
+            <input
+              ref={inputRef}
+              className="collection-detail__rename-input"
+              value={editName}
+              onChange={(e) => setEditName(e.target.value)}
+              onKeyDown={handleKeyDown}
+              aria-label="Collection name"
+              disabled={saving}
+            />
+            <button
+              className="btn btn--primary"
+              onClick={() => void handleSave()}
+              disabled={saving || !editName.trim()}
+            >
+              {saving ? 'Saving…' : 'Save'}
+            </button>
+            <button
+              className="btn"
+              onClick={cancelEditing}
+              disabled={saving}
+            >
+              Cancel
+            </button>
+            {saveError && <span className="collection-detail__save-error">{saveError}</span>}
+          </div>
+        ) : (
+          <>
+            <div className="collection-detail__title">
+              <h1>{detail?.name ?? 'Collection'}</h1>
+              {detail && (
                 <button
-                  type="button"
-                  className="collection-detail__delete-btn"
-                  onClick={() => setDeleteModalOpen(true)}
+                  className="collection-detail__edit-btn"
+                  onClick={startEditing}
+                  aria-label="Edit collection name"
                 >
-                  Delete
+                  <svg viewBox="0 0 16 16" width="16" height="16" aria-hidden="true" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M11.5 2.5a2.121 2.121 0 1 1 3 3L5 15H1v-4L11.5 2.5Z" />
+                  </svg>
                 </button>
               )}
-            </>
-          )}
-        </div>
+            </div>
+            {detail && !detail.is_default && (
+              <button
+                type="button"
+                className="collection-detail__delete-btn"
+                onClick={() => setDeleteModalOpen(true)}
+              >
+                Delete
+              </button>
+            )}
+          </>
+        )}
+      </div>
 
+      <div className="page__inner">
         {error && <p className="page__error">{error}</p>}
 
-        {detail && (
-          <div className="collection-detail__market-value">
-            <span className="collection-detail__market-value-label">Market Value</span>
-            <span className="collection-detail__market-value-amount">${marketValue.toFixed(2)}</span>
-          </div>
-        )}
+        {loading ? (
+          <>
+            <div className="collection-detail__market-value" aria-busy="true">
+              <div className="collection-detail__skeleton collection-detail__skeleton--label" />
+              <div className="collection-detail__skeleton collection-detail__skeleton--hero" />
+            </div>
+            <div className="collection-detail__summary" aria-busy="true">
+              {Array.from({ length: 4 }).map((_, index) => (
+                <div
+                  key={index}
+                  className="collection-detail__summary-stat collection-detail__summary-stat--skeleton"
+                />
+              ))}
+            </div>
+          </>
+        ) : detail ? (
+          <>
+            <div className="collection-detail__market-value">
+              <span className="collection-detail__market-value-label">Market Value</span>
+              <span className="collection-detail__market-value-amount">${marketValue.toFixed(2)}</span>
+            </div>
 
-        {detail && (
-          <div className="collection-detail__summary">
-            <div className="collection-detail__summary-stat">
-              <span className="collection-detail__summary-label">Cards</span>
-              <span className="collection-detail__summary-value">{detail.card_count}</span>
+            <div className="collection-detail__summary">
+              <div className="collection-detail__summary-stat">
+                <span className="collection-detail__summary-label">Cards</span>
+                <span className="collection-detail__summary-value">{detail.card_count}</span>
+              </div>
+              <div className="collection-detail__summary-stat">
+                <span className="collection-detail__summary-label">Purchased Market Value</span>
+                <span className="collection-detail__summary-value">${purchasedMarketValue.toFixed(2)}</span>
+              </div>
+              <div className="collection-detail__summary-stat">
+                <span className="collection-detail__summary-label">Total Spent</span>
+                <span className="collection-detail__summary-value">${totalSpent.toFixed(2)}</span>
+              </div>
+              <div className="collection-detail__summary-stat">
+                <span className="collection-detail__summary-label">Gain / Loss</span>
+                <span className={`collection-detail__summary-value collection-detail__gain-loss ${gainLossClass}`}>
+                  {gainLoss >= 0 ? '+' : ''}${gainLoss.toFixed(2)}
+                </span>
+              </div>
             </div>
-            <div className="collection-detail__summary-stat">
-              <span className="collection-detail__summary-label">Purchased Market Value</span>
-              <span className="collection-detail__summary-value">${purchasedMarketValue.toFixed(2)}</span>
-            </div>
-            <div className="collection-detail__summary-stat">
-              <span className="collection-detail__summary-label">Total Spent</span>
-              <span className="collection-detail__summary-value">${totalSpent.toFixed(2)}</span>
-            </div>
-            <div className="collection-detail__summary-stat">
-              <span className="collection-detail__summary-label">Gain / Loss</span>
-              <span className={`collection-detail__summary-value collection-detail__gain-loss ${gainLossClass}`}>
-                {gainLoss >= 0 ? '+' : ''}${gainLoss.toFixed(2)}
-              </span>
-            </div>
-          </div>
-        )}
+          </>
+        ) : null}
 
         {!loading && !detail && !error && (
           <p className="page__message">Collection not found.</p>
@@ -244,8 +261,8 @@ export function CollectionPage() {
         ) : null}
       </div>
 
-      {detail && sortedItems.length > 0 && (
-        <div className="page__header">
+      {(loading || (detail && sortedItems.length > 0)) && (
+        <div className="page__header page__header--above-list">
           <span />
           <SortSelect
             options={CARD_SORT_OPTIONS}
@@ -263,6 +280,7 @@ export function CollectionPage() {
           collectionId={detail?.id}
           collectionName={detail?.name}
           onHistory={setHistoryItem}
+          onRemove={setRemoveItem}
         />
       )}
 
@@ -285,6 +303,19 @@ export function CollectionPage() {
           onClose={() => setHistoryItem(null)}
           onMutated={() => {
             setHistoryItem(null)
+            setRefresh((n) => n + 1)
+          }}
+        />
+      )}
+
+      {removeItem && detail && (
+        <RemoveFromCollectionModal
+          collectionId={detail.id}
+          item={removeItem}
+          collectionName={detail.name}
+          onClose={() => setRemoveItem(null)}
+          onRemoved={() => {
+            setRemoveItem(null)
             setRefresh((n) => n + 1)
           }}
         />

@@ -84,7 +84,7 @@ export function CardDetailPage() {
 
   if (loading) {
     return (
-      <div className="page">
+      <div className="page page--wide">
         <p className="page__message">Loading card...</p>
       </div>
     )
@@ -92,21 +92,24 @@ export function CardDetailPage() {
 
   if (error || !card) {
     return (
-      <div className="page">
+      <div className="page page--wide">
         <Breadcrumb items={getCardBreadcrumbItems(searchParams)} />
-        <p className="page__error">{error ?? 'Card not found.'}</p>
-        <Link to="/" className="btn">
-          Back to sets
-        </Link>
+        <div className="page__inner">
+          <p className="page__error">{error ?? 'Card not found.'}</p>
+          <Link to="/" className="btn">
+            Back to sets
+          </Link>
+        </div>
       </div>
     )
   }
 
   return (
-    <div className="page">
+    <div className="page page--wide">
       <Breadcrumb items={getCardBreadcrumbItems(searchParams, card)} />
 
-      <div className="card-detail">
+      <div className="page__inner">
+        <div className="card-detail">
         <h1 className="card-detail__title">
           {card.name}
           {card.number && <span className="card-detail__title-number"> ({card.number})</span>}
@@ -286,6 +289,7 @@ export function CardDetailPage() {
             </div>
           )}
 
+        </div>
         </div>
       </div>
 

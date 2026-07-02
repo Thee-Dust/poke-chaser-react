@@ -141,6 +141,23 @@ async function deletePurchase(
   )
 }
 
+async function deleteCollectionItem(collectionId: number, itemId: number): Promise<void> {
+  await ensureCsrf()
+  await fetchJson(getUrl(`collections/${collectionId}/items/${itemId}/`), { method: 'DELETE' })
+}
+
+async function updateCollectionItemQuantity(
+  collectionId: number,
+  itemId: number,
+  quantity: number,
+): Promise<void> {
+  await ensureCsrf()
+  await fetchJson(getUrl(`collections/${collectionId}/items/${itemId}/`), {
+    method: 'PATCH',
+    body: JSON.stringify({ quantity }),
+  })
+}
+
 async function deleteCollection(id: number): Promise<void> {
   await ensureCsrf()
   await fetchJson(getUrl(`collections/${id}/`), { method: 'DELETE' })
@@ -247,6 +264,8 @@ export const dataProvider = {
   addCardToCollection,
   addPurchase,
   deletePurchase,
+  deleteCollectionItem,
+  updateCollectionItemQuantity,
   updateCollection,
   deleteCollection,
   getBinderSizes,

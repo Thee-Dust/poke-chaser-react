@@ -8,6 +8,7 @@ type CardTileProps = {
   showSetName?: boolean
   onAdd?: (card: Card) => void
   onHistory?: () => void
+  onRemove?: () => void
   marketValue?: string | null
   quantity?: number
   collectionId?: number
@@ -28,6 +29,7 @@ export function CardTile({
   showSetName = false,
   onAdd,
   onHistory,
+  onRemove,
   marketValue,
   quantity,
   collectionId,
@@ -75,22 +77,42 @@ export function CardTile({
                 <span className="card-tile__quantity">Qty {quantity}</span>
               )}
             </div>
-            {onHistory && (
-              <button
-                type="button"
-                className="card-tile__history-btn"
-                aria-label={`Purchase history for ${card.name}`}
-                onClick={(e) => {
-                  e.stopPropagation()
-                  e.preventDefault()
-                  onHistory()
-                }}
-              >
-                <svg viewBox="0 0 16 16" width="13" height="13" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-                  <circle cx="8" cy="8" r="6.5" />
-                  <path d="M8 4.5V8l2.5 1.5" />
-                </svg>
-              </button>
+            {(onHistory || onRemove) && (
+              <div className="card-tile__actions">
+                {onHistory && (
+                  <button
+                    type="button"
+                    className="card-tile__history-btn"
+                    aria-label={`Purchase history for ${card.name}`}
+                    onClick={(e) => {
+                      e.stopPropagation()
+                      e.preventDefault()
+                      onHistory()
+                    }}
+                  >
+                    <svg viewBox="0 0 16 16" width="13" height="13" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                      <circle cx="8" cy="8" r="6.5" />
+                      <path d="M8 4.5V8l2.5 1.5" />
+                    </svg>
+                  </button>
+                )}
+                {onRemove && (
+                  <button
+                    type="button"
+                    className="card-tile__remove-btn"
+                    aria-label={`Remove ${card.name} from collection`}
+                    onClick={(e) => {
+                      e.stopPropagation()
+                      e.preventDefault()
+                      onRemove()
+                    }}
+                  >
+                    <svg viewBox="0 0 16 16" width="13" height="13" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                      <path d="M2 4h12M5.5 4V2.5h5V4M6 7v4.5M10 7v4.5M3 4l.75 9h8.5L13 4" />
+                    </svg>
+                  </button>
+                )}
+              </div>
             )}
             {onAdd && user && (
               <button

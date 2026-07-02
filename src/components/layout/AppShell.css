@@ -39,6 +39,15 @@
   flex-wrap: wrap;
 }
 
+.page__header--centered {
+  justify-content: center;
+}
+
+.page__header--above-list {
+  border-bottom: 1px solid var(--border);
+  padding-bottom: 16px;
+}
+
 .page__header h1 {
   margin: 0;
 }
@@ -326,7 +335,6 @@
   color: var(--text);
   font-weight: 500;
   font-size: 13px;
-  align-self: start;
   background: var(--code-bg);
   border-right: 1px solid var(--border);
 }

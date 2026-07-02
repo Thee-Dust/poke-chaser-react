@@ -9,6 +9,7 @@ type CardGridProps = {
   showSetName?: boolean
   onAddToCollection?: (card: Card) => void
   onHistory?: (item: CollectionItem) => void
+  onRemove?: (item: CollectionItem) => void
   collectionId?: number
   collectionName?: string
 }
@@ -20,6 +21,7 @@ export function CardGrid({
   showSetName = false,
   onAddToCollection,
   onHistory,
+  onRemove,
   collectionId,
   collectionName,
 }: CardGridProps) {
@@ -53,6 +55,7 @@ export function CardGrid({
             collectionName={collectionName}
             onAdd={onAddToCollection}
             onHistory={onHistory ? () => onHistory(item) : undefined}
+            onRemove={onRemove ? () => onRemove(item) : undefined}
           />
         ))}
       </div>

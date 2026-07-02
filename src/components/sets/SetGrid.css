@@ -69,15 +69,30 @@
 
 .set-tile--skeleton {
   min-height: 200px;
-  border-radius: 10px;
+  position: relative;
+  border-color: transparent;
+  box-shadow: var(--shadow);
+  overflow: hidden;
+  background:
+    linear-gradient(var(--bg) 0, var(--bg)) 0 60% / 100% 40%,
+    linear-gradient(var(--code-bg) 0, var(--code-bg)) 0 0 / 100% 60%;
+  background-repeat: no-repeat;
+  animation: none;
+}
+
+.set-tile--skeleton::after {
+  content: '';
+  position: absolute;
+  inset: 0;
   background: linear-gradient(
     90deg,
-    var(--code-bg) 25%,
+    transparent 25%,
     var(--border) 50%,
-    var(--code-bg) 75%
+    transparent 75%
   );
   background-size: 200% 100%;
   animation: shimmer 1.5s infinite;
+  opacity: 0.6;
 }
 
 @keyframes shimmer {

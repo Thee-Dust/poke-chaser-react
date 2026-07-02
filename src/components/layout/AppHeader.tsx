@@ -4,6 +4,11 @@ import { useAuth } from '../../context/AuthContext'
 import { useTheme } from '../../context/ThemeContext'
 import './AppHeader.css'
 
+const LOGO_BY_THEME = {
+  light: '/pokechaser-logo-light-mode.png',
+  dark: '/pokechaser-logo-dark-mode.png',
+} as const
+
 type AppHeaderProps = {
   searchQuery?: string
   onSearchSubmit?: (query: string) => void
@@ -91,7 +96,13 @@ export function AppHeader({ searchQuery = '', onSearchSubmit }: AppHeaderProps) 
   return (
     <header className="app-header">
       <Link to="/" className="app-header__logo">
-        Poke Chaser
+        <img
+          src={LOGO_BY_THEME[theme]}
+          alt="Poke Chaser"
+          className="app-header__logo-image"
+          width={80}
+          height={80}
+        />
       </Link>
 
       <HeaderSearchForm
