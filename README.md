@@ -8,6 +8,10 @@
   A full-stack Pokémon TCG browser and collection manager — browse sets, track owned cards, and organize them in visual binders.
 </p>
 
+<p align="center">
+  <a href="https://github.com/Thee-Dust/poke-chaser-react/actions/workflows/ci.yml"><img src="https://github.com/Thee-Dust/poke-chaser-react/actions/workflows/ci.yml/badge.svg" alt="CI" /></a>
+</p>
+
 ## Features
 
 ### Browse & discover
@@ -83,6 +87,33 @@ Open the URL Vite prints (typically `http://localhost:5173`).
 | `npm run build` | TypeScript check + production build |
 | `npm run lint` | Run ESLint |
 | `npm run preview` | Serve the production build locally |
+
+## CI
+
+Pull requests and pushes to `main` run the [CI workflow](.github/workflows/ci.yml): `npm ci` and `npm run build` (TypeScript + Vite). Failed builds block merge until fixed.
+
+## Deploying
+
+Production deploys run via GitHub Actions on version tags (`v*.*.*`), matching the backend release pattern.
+
+**GitHub repository variables** (Settings → Secrets and variables → Actions → Variables):
+
+| Variable | Example |
+|----------|---------|
+| `AWS_DEPLOY_ROLE_ARN` | IAM role from backend Terraform output `github_frontend_deploy_role_arn` |
+| `S3_BUCKET` | `poke-chaser-frontend-prod` |
+| `CLOUDFRONT_DISTRIBUTION_ID` | CloudFront distribution ID from Terraform |
+| `AWS_REGION` | `us-east-1` |
+| `VITE_API_BASE_URL` | `https://api.pokechaser.com` |
+
+Release:
+
+```bash
+git tag v1.0.0
+git push origin v1.0.0
+```
+
+The workflow builds with `VITE_API_BASE_URL`, syncs `dist/` to S3, and invalidates the CloudFront cache.
 
 ## Project structure
 
