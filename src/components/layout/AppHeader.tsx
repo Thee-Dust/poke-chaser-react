@@ -2,7 +2,6 @@ import { useEffect, useRef, useState } from 'react'
 import { Link, NavLink } from 'react-router-dom'
 import { useAuth } from '../../context/AuthContext'
 import { useTheme } from '../../context/ThemeContext'
-import { displayName } from '../../utils/displayName'
 import './AppHeader.css'
 
 const LOGO_BY_THEME = {
@@ -137,7 +136,7 @@ export function AppHeader({ searchQuery = '', onSearchSubmit }: AppHeaderProps) 
               aria-expanded={menuOpen}
               onClick={() => setMenuOpen((o) => !o)}
             >
-              {displayName(user)}
+              {user.username}
               <span className="app-header__user-caret" aria-hidden="true">
                 {menuOpen ? '▴' : '▾'}
               </span>
