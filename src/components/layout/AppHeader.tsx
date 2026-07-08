@@ -145,6 +145,14 @@ export function AppHeader({ searchQuery = '', onSearchSubmit }: AppHeaderProps) 
             {menuOpen && (
               <div className="app-header__menu" role="menu">
                 <NavLink
+                  to="/profile"
+                  className="app-header__menu-item"
+                  role="menuitem"
+                  onClick={() => setMenuOpen(false)}
+                >
+                  Profile
+                </NavLink>
+                <NavLink
                   to="/collections"
                   className="app-header__menu-item"
                   role="menuitem"

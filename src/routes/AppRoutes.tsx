@@ -6,6 +6,7 @@ import { CardDetailPage } from '../pages/CardDetailPage'
 import { CollectionPage } from '../pages/CollectionPage'
 import { CollectionsPage } from '../pages/CollectionsPage'
 import { DashboardPage } from '../pages/DashboardPage'
+import { ProfilePage } from '../pages/ProfilePage'
 import { ResetPasswordPage } from '../pages/ResetPasswordPage'
 import { SearchPage } from '../pages/SearchPage'
 import { SetDetailPage } from '../pages/SetDetailPage'
@@ -25,6 +26,7 @@ export function AppRoutes() {
           <Route path="collections/:collectionId" element={<CollectionPage />} />
           <Route path="binders" element={<BindersPage />} />
           <Route path="binders/:binderId" element={<BinderBuilderPage />} />
+          <Route path="profile" element={<ProfilePage />} />
         </Route>
       </Route>
     </Routes>

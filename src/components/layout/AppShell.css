@@ -143,6 +143,24 @@
   opacity: 0.9;
 }
 
+.btn--danger {
+  background: #dc2626;
+  color: #fff;
+  border-color: transparent;
+}
+
+.btn--danger:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  background: var(--border);
+  color: var(--text);
+}
+
+.btn--danger:hover:not(:disabled) {
+  border-color: #dc2626;
+  opacity: 0.9;
+}
+
 .btn--link {
   background: none;
   border-color: transparent;

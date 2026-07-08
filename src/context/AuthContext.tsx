@@ -8,7 +8,7 @@ import {
   useState,
   type ReactNode,
 } from 'react'
-import type { User } from '../api/types'
+import type { User, UserUpdatePayload } from '../api/types'
 import { ensureCsrf, fetchJson, getUrl } from '../utils/api'
 
 type AuthModalMode = 'login' | 'register'
@@ -21,6 +21,7 @@ type AuthContextValue = {
   requestPasswordReset: (email: string) => Promise<string>
   confirmPasswordReset: (uid: string, token: string, password: string) => Promise<void>
   logout: () => Promise<void>
+  updateProfile: (payload: UserUpdatePayload) => Promise<void>
   authModalOpen: boolean
   authModalMode: AuthModalMode
   openAuthModal: (mode?: AuthModalMode) => void
@@ -108,6 +109,28 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setUser(null)
   }, [])
 
+  const updateProfile = useCallback(async (payload: UserUpdatePayload) => {
+    await ensureCsrf()
+    const headers = new Headers()
+    headers.set('Accept', 'application/json')
+    headers.set('Content-Type', 'application/json')
+    const csrf = getCsrfToken()
+    if (csrf) headers.set('X-CSRFToken', csrf)
+
+    const response = await fetch(getUrl('auth/me/'), {
+      method: 'PATCH',
+      headers,
+      credentials: 'include',
+      body: JSON.stringify(payload),
+    })
+    const text = await response.text()
+    const json = text ? JSON.parse(text) : {}
+    if (!response.ok) {
+      throw new Error(extractApiError(json, response.statusText))
+    }
+    setUser(json as User)
+  }, [])
+
   const requestPasswordReset = useCallback(async (email: string) => {
     const json = await postAuthJson<{ detail: string }>('auth/password-reset/', { email })
     return json.detail
@@ -138,6 +161,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       requestPasswordReset,
       confirmPasswordReset,
       logout,
+      updateProfile,
       authModalOpen,
       authModalMode,
       openAuthModal,
@@ -151,6 +175,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       requestPasswordReset,
       confirmPasswordReset,
       logout,
+      updateProfile,
       authModalOpen,
       authModalMode,
       openAuthModal,
