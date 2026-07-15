@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import { useAuth } from '../context/AuthContext'
+import { isValidUsername, USERNAME_INVALID_MESSAGE } from '../utils/username'
 import './ProfilePage.css'
 
 function formatMemberSince(dateJoined?: string): string | null {
@@ -46,6 +47,12 @@ export function ProfilePage() {
   async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault()
     if (!isDirty) return
+
+    if (!isValidUsername(username)) {
+      setError(USERNAME_INVALID_MESSAGE)
+      setSuccess(null)
+      return
+    }
 
     setSubmitting(true)
     setError(null)
