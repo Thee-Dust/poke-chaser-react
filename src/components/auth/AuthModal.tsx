@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import { useAuth } from '../../context/AuthContext'
+import { isValidUsername, USERNAME_INVALID_MESSAGE } from '../../utils/username'
 import './AuthModal.css'
 
 type FormView = 'auth' | 'reset-request'
@@ -48,6 +49,10 @@ export function AuthModal() {
 
   async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault()
+    if (authModalMode === 'register' && !isValidUsername(username)) {
+      setError(USERNAME_INVALID_MESSAGE)
+      return
+    }
     if (authModalMode === 'register' && password !== confirmPassword) {
       setError('Passwords do not match.')
       return
