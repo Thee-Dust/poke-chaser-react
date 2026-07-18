@@ -5,6 +5,7 @@ import { AddToCollectionModal } from '../components/collections/AddToCollectionM
 import { Breadcrumb, type BreadcrumbItem } from '../components/layout/Breadcrumb'
 import { useAuth } from '../context/AuthContext'
 import { useData } from '../providers/DataProviderContext'
+import { setPath } from '../utils/setSlug'
 
 function formatVariant(key: string): string {
   return key
@@ -34,7 +35,7 @@ function getCardBreadcrumbItems(searchParams: URLSearchParams, card?: Card): Bre
   return [
     { label: 'Browse Sets', to: '/' },
     ...(card?.set_id && card?.set_name
-      ? [{ label: card.set_name, to: `/sets/${card.set_id}` }]
+      ? [{ label: card.set_name, to: setPath({ id: card.set_id, name: card.set_name }) }]
       : []),
     { label: cardLabel },
   ]
@@ -117,7 +118,7 @@ export function CardDetailPage() {
             <span className="card-detail__title-set">
               {' — '}
               {card.set_id ? (
-                <Link to={`/sets/${card.set_id}`}>{card.set_name}</Link>
+                <Link to={setPath({ id: card.set_id, name: card.set_name })}>{card.set_name}</Link>
               ) : (
                 card.set_name
               )}

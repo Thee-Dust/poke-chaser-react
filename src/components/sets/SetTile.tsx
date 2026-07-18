@@ -1,5 +1,6 @@
 import { Link } from 'react-router-dom'
 import type { Set } from '../../api/types'
+import { setPath } from '../../utils/setSlug'
 import './SetGrid.css'
 
 type SetTileProps = {
@@ -21,7 +22,7 @@ export function SetTile({ set }: SetTileProps) {
   const cardCount = set.total
 
   return (
-    <Link to={`/sets/${set.id}`} className="set-tile">
+    <Link to={setPath(set)} className="set-tile">
       <div className="set-tile__image-wrap">
         {logo ? (
           <img src={logo} alt="" className="set-tile__image" loading="lazy" />

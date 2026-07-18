@@ -17,7 +17,7 @@ export function AppRoutes() {
     <Routes>
       <Route element={<AppShell />}>
         <Route index element={<DashboardPage />} />
-        <Route path="sets/:setId" element={<SetDetailPage />} />
+        <Route path="sets/:setSlug" element={<SetDetailPage />} />
         <Route path="search" element={<SearchPage />} />
         <Route path="reset-password" element={<ResetPasswordPage />} />
         <Route path="cards/:cardId" element={<CardDetailPage />} />

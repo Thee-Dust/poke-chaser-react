@@ -7,6 +7,7 @@ import { Breadcrumb } from '../components/layout/Breadcrumb'
 import { Pagination } from '../components/ui/Pagination'
 import { CARD_SORT_OPTIONS, SortSelect } from '../components/ui/SortSelect'
 import { useData } from '../providers/DataProviderContext'
+import { parseSetIdFromParam } from '../utils/setSlug'
 
 const SET_CARD_SORT_OPTIONS = [
   { value: 'number_asc', label: 'Default' },
@@ -15,7 +16,8 @@ const SET_CARD_SORT_OPTIONS = [
 
 export function SetDetailPage() {
   const data = useData()
-  const { setId = '' } = useParams()
+  const { setSlug = '' } = useParams()
+  const setId = parseSetIdFromParam(setSlug)
   const [set, setSet] = useState<Set | undefined>()
   const [cards, setCards] = useState<Card[]>([])
   const [page, setPage] = useState(1)
