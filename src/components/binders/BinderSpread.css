@@ -9,11 +9,21 @@
 }
 
 .binder-spread__left,
-.binder-spread__right {
+.binder-spread__right,
+.binder-spread__panel {
   width: var(--binder-page-width);
   flex: 0 0 var(--binder-page-width);
   min-width: 0;
   min-height: calc(var(--binder-page-width) * 11 / 8.5);
+}
+
+.binder-spread--single {
+  width: 100%;
+}
+
+.binder-spread--single .binder-spread__panel {
+  width: 100%;
+  flex: 1 1 auto;
 }
 
 .binder-spread__spine {
@@ -142,6 +152,7 @@
 
 /* Slot */
 .binder-slot {
+  width: 100%;
   aspect-ratio: 2.5 / 3.5;
   border-radius: 5px;
   overflow: hidden;
@@ -241,6 +252,24 @@
   opacity: 1;
 }
 
+@media (hover: none) {
+  .binder-slot__add,
+  .binder-slot__view,
+  .binder-slot__remove {
+    opacity: 1;
+  }
+
+  .binder-slot__view,
+  .binder-slot__remove {
+    width: 28px;
+    height: 28px;
+  }
+
+  .binder-slot__add {
+    font-size: 24px;
+  }
+}
+
 .binder-slot__view:hover {
   background: rgba(0, 0, 0, 0.75);
 }
@@ -252,4 +281,26 @@
 .binder-slot__remove:disabled {
   opacity: 0.4;
   cursor: not-allowed;
+}
+
+@media (max-width: 640px) {
+  .binder-spread--single {
+    overflow: visible;
+  }
+
+  .binder-spread--single .binder-spread__panel {
+    min-height: 0;
+    height: auto;
+  }
+
+  .binder-spread--single .binder-page-wrap {
+    height: auto;
+  }
+
+  .binder-spread--single .binder-page {
+    flex: none;
+    align-content: start;
+    gap: 6px;
+    padding: 8px;
+  }
 }
