@@ -249,6 +249,10 @@
     height: 38px;
   }
 
+  .app-header__theme-btn {
+    margin-left: auto;
+  }
+
   .app-header__search {
     order: 3;
     flex-basis: 100%;

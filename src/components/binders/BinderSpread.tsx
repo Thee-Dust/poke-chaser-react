@@ -11,6 +11,7 @@ type BinderSpreadProps = {
   rightPage: BinderPageData | null
   rows: number
   cols: number
+  layout?: 'spread' | 'single'
   onSlotUpdated: (pageId: number, position: number, slot: BinderSlotData) => void
   onSlotCleared: (pageId: number, position: number) => void
   onSlotMoved: BinderSlotMoveHandler
@@ -24,12 +25,33 @@ export function BinderSpread({
   rightPage,
   rows,
   cols,
+  layout = 'spread',
   onSlotUpdated,
   onSlotCleared,
   onSlotMoved,
   onBinderRenamed,
 }: BinderSpreadProps) {
   const pageProps = { binderId, rows, cols, onSlotUpdated, onSlotCleared, onSlotMoved }
+
+  if (layout === 'single') {
+    return (
+      <div className="binder-spread binder-spread--single">
+        <div className="binder-spread__panel">
+          {leftPage ? (
+            <BinderPage page={leftPage} {...pageProps} />
+          ) : (
+            <div className="binder-spread__cover">
+              <BinderCoverNameEditor
+                binderId={binderId}
+                name={binderName}
+                onRenamed={onBinderRenamed}
+              />
+            </div>
+          )}
+        </div>
+      </div>
+    )
+  }
 
   return (
     <div className="binder-spread">

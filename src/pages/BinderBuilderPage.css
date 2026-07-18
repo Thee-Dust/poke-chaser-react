@@ -165,10 +165,23 @@
 /* Sidebar toggle — visible only on narrow screens */
 .binder-builder__sidebar-toggle {
   display: none;
-  align-self: flex-start;
+  align-self: flex-end;
+  flex-shrink: 0;
 
   @media (max-width: 900px) {
     display: inline-flex;
+  }
+}
+
+.binder-builder__toolbar {
+  display: none;
+  width: 100%;
+  align-items: flex-end;
+  gap: 12px;
+  margin-bottom: 8px;
+
+  @media (max-width: 900px) {
+    display: flex;
   }
 }
 
@@ -189,6 +202,18 @@
 
   @media (max-width: 900px) {
     display: none;
+  }
+}
+
+.binder-builder__jump-label--toolbar {
+  display: none;
+  flex: 1;
+  min-width: 0;
+}
+
+@media (max-width: 900px) {
+  .binder-builder__jump-label.binder-builder__jump-label--toolbar {
+    display: flex;
   }
 }
 
@@ -246,18 +271,14 @@
   }
 }
 
-@media (max-width: 640px) {
-  .binder-builder__main {
-    padding: 24px 16px 24px 0;
+@media (min-width: 901px) {
+  .binder-builder__rail .binder-sidebar {
+    width: 100%;
+    flex: 1;
+    min-height: 0;
+    display: flex;
+    flex-direction: column;
   }
-}
-
-.binder-builder__rail .binder-sidebar {
-  width: 100%;
-  flex: 1;
-  min-height: 0;
-  display: flex;
-  flex-direction: column;
 }
 
 /* Spread + add-page button */
@@ -329,4 +350,64 @@
   padding: 32px 0;
   font-size: 15px;
   color: var(--text);
+}
+
+@media (max-width: 640px) {
+  .binder-builder__main {
+    padding: 12px 8px;
+    align-items: stretch;
+  }
+
+  .binder-builder__spread-wrap {
+    flex-direction: column;
+    align-items: center;
+    width: 100%;
+    gap: 12px;
+  }
+
+  .binder-builder__spread-col {
+    --binder-page-width: 100%;
+    width: 100%;
+    max-width: none;
+    align-items: stretch;
+  }
+
+  .binder-builder__spread-col .binder-spread {
+    width: 100%;
+  }
+
+  .binder-builder__title-row--single {
+    display: grid;
+    grid-template-columns: 48px 1fr 48px;
+    align-items: center;
+    gap: 8px;
+    width: 100%;
+  }
+
+  .binder-builder__title-row--single .binder-builder__nav-btn:first-child {
+    justify-self: start;
+  }
+
+  .binder-builder__title-row--single .binder-builder__nav-btn:last-child {
+    justify-self: end;
+  }
+
+  .binder-builder__title-row--single .binder-builder__page-name,
+  .binder-builder__title-row--single .binder-builder__page-name-input,
+  .binder-builder__title-row--single .binder-builder__page-name--static {
+    max-width: none;
+    width: 100%;
+    justify-self: center;
+    justify-content: center;
+    text-align: center;
+  }
+
+  .binder-builder__page-name--static {
+    cursor: default;
+  }
+
+  .binder-builder__add-page-wrap {
+    justify-content: center;
+    width: 100%;
+  }
 }

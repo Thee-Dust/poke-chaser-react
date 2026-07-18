@@ -8,6 +8,7 @@ import { BinderSpread } from '../components/binders/BinderSpread'
 import type { BinderSlotMoveHandler } from '../components/binders/BinderSlot'
 import { Breadcrumb } from '../components/layout/Breadcrumb'
 import { useData } from '../providers/DataProviderContext'
+import { useMediaQuery } from '../utils/useMediaQuery'
 import './BinderBuilderPage.css'
 
 function getTotalSpreads(pages: BinderPageData[]): number {
@@ -43,6 +44,34 @@ function getSpreadLabel(spread: number, pages: BinderPageData[]): string {
   return 'Cover'
 }
 
+function getTotalPageViews(pages: BinderPageData[]): number {
+  return 1 + pages.length
+}
+
+function getPageViewPage(view: number, pages: BinderPageData[]): BinderPageData | null {
+  if (view <= 0) return null
+  return pages[view - 1] ?? null
+}
+
+function getPageViewLabel(view: number, pages: BinderPageData[]): string {
+  if (view <= 0) return 'Cover'
+  const page = pages[view - 1]
+  if (!page) return 'Cover'
+  return getPageDisplayName(page, pages)
+}
+
+function pageViewToSpread(view: number): number {
+  if (view <= 0) return 0
+  const pageIndex = view - 1
+  if (pageIndex === 0) return 0
+  return Math.ceil(pageIndex / 2)
+}
+
+function spreadToPageView(spread: number): number {
+  if (spread <= 0) return 0
+  return 2 * spread
+}
+
 type PendingSlotWrite = {
   pageId: number
   position: number
@@ -67,6 +96,7 @@ function syncCommittedSlotsRef(
 export function BinderBuilderPage() {
   const { binderId } = useParams<{ binderId: string }>()
   const data = useData()
+  const isNarrow = useMediaQuery('(max-width: 640px)')
 
   // Data
   const [binder, setBinder] = useState<BinderDetail | null>(null)
@@ -75,10 +105,12 @@ export function BinderBuilderPage() {
 
   // Navigation
   const [currentSpread, setCurrentSpread] = useState(0)
+  const [currentPageView, setCurrentPageView] = useState(0)
   const [addingPage, setAddingPage] = useState(false)
   const pendingSlotWritesRef = useRef<Map<string, PendingSlotWrite>>(new Map())
   const committedSlotsRef = useRef<Map<string, boolean>>(new Map())
   const slotWriteTimerRef = useRef<number | null>(null)
+  const wasNarrowRef = useRef(isNarrow)
 
   // Sidebar (mobile)
   const [sidebarOpen, setSidebarOpen] = useState(false)
@@ -120,6 +152,19 @@ export function BinderBuilderPage() {
       }
     }
   }, [])
+
+  useEffect(() => {
+    if (wasNarrowRef.current === isNarrow) return
+
+    if (isNarrow) {
+      setCurrentPageView(spreadToPageView(currentSpread))
+    } else {
+      setCurrentSpread(pageViewToSpread(currentPageView))
+    }
+    wasNarrowRef.current = isNarrow
+    // Remap only when crossing the breakpoint; use indices from this render.
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- intentional
+  }, [isNarrow])
 
   // ---- Slot handlers ----
 
@@ -272,6 +317,7 @@ export function BinderBuilderPage() {
       const updatedPages = [...binder.pages, newPage]
       setBinder({ ...binder, pages: updatedPages, page_count: updatedPages.length })
       setCurrentSpread(getTotalSpreads(updatedPages) - 1)
+      setCurrentPageView(getTotalPageViews(updatedPages) - 1)
     } finally {
       setAddingPage(false)
     }
@@ -299,9 +345,14 @@ export function BinderBuilderPage() {
   }
 
   const spreads = getTotalSpreads(binder.pages)
+  const pageViews = getTotalPageViews(binder.pages)
   const clampedSpread = Math.min(currentSpread, spreads - 1)
+  const clampedPageView = Math.min(currentPageView, pageViews - 1)
   const isLastSpread = clampedSpread === spreads - 1
+  const isLastPageView = clampedPageView === pageViews - 1
   const { left, right } = getSpreadPages(clampedSpread, binder.pages)
+  const singlePage = getPageViewPage(clampedPageView, binder.pages)
+  const showAddPage = isNarrow ? isLastPageView : isLastSpread
 
   return (
     <div className="binder-builder">
@@ -310,60 +361,123 @@ export function BinderBuilderPage() {
           <div className="binder-builder__header">
             <Breadcrumb items={[{ label: 'Binders', to: '/binders' }, { label: binder.name }]} />
           </div>
-          <button
-            type="button"
-            className="btn binder-builder__sidebar-toggle"
-            onClick={() => setSidebarOpen((o) => !o)}
-            aria-label="Toggle card panel"
-          >
-            Cards
-          </button>
+          <div className="binder-builder__toolbar">
+            <label className="binder-builder__jump-label binder-builder__jump-label--toolbar">
+              <span className="binder-builder__jump-title">Jump to page</span>
+              <select
+                className="binder-builder__jump-select"
+                value={isNarrow ? clampedPageView : clampedSpread}
+                aria-label="Jump to page"
+                onChange={(e) => {
+                  const next = Number(e.target.value)
+                  if (isNarrow) setCurrentPageView(next)
+                  else setCurrentSpread(next)
+                }}
+              >
+                {isNarrow
+                  ? Array.from({ length: pageViews }).map((_, i) => (
+                      <option key={i} value={i}>
+                        {getPageViewLabel(i, binder.pages)}
+                      </option>
+                    ))
+                  : Array.from({ length: spreads }).map((_, i) => (
+                      <option key={i} value={i}>
+                        {getSpreadLabel(i, binder.pages)}
+                      </option>
+                    ))}
+              </select>
+            </label>
+            <button
+              type="button"
+              className="btn binder-builder__sidebar-toggle"
+              onClick={() => setSidebarOpen((o) => !o)}
+              aria-label="Toggle card panel"
+            >
+              Cards
+            </button>
+          </div>
           <div className="binder-builder__spread-wrap">
             <div className="binder-builder__spread-col">
-              <div className="binder-builder__title-row">
-                <div className="binder-builder__title-page binder-builder__title-page--left">
+              {isNarrow ? (
+                <div className="binder-builder__title-row binder-builder__title-row--single">
                   <button
                     type="button"
                     className="btn binder-builder__nav-btn"
-                    onClick={() => setCurrentSpread((s) => Math.max(0, s - 1))}
-                    disabled={clampedSpread === 0}
-                    aria-label="Previous spread"
+                    onClick={() => setCurrentPageView((v) => Math.max(0, v - 1))}
+                    disabled={clampedPageView === 0}
+                    aria-label="Previous page"
                   >
                     ‹
                   </button>
-                  <BinderPageNameEditor
-                    binderId={binder.id}
-                    page={left}
-                    pages={binder.pages}
-                    onRenamed={handlePageRenamed}
-                  />
-                </div>
-
-                <div className="binder-builder__title-spine" aria-hidden="true" />
-
-                <div className="binder-builder__title-page binder-builder__title-page--right">
-                  <BinderPageNameEditor
-                    binderId={binder.id}
-                    page={right}
-                    pages={binder.pages}
-                    onRenamed={handlePageRenamed}
-                  />
+                  {singlePage ? (
+                    <BinderPageNameEditor
+                      binderId={binder.id}
+                      page={singlePage}
+                      pages={binder.pages}
+                      onRenamed={handlePageRenamed}
+                    />
+                  ) : (
+                    <span className="binder-builder__page-name binder-builder__page-name--static">
+                      Cover
+                    </span>
+                  )}
                   <button
                     type="button"
                     className="btn binder-builder__nav-btn"
-                    onClick={() => setCurrentSpread((s) => Math.min(spreads - 1, s + 1))}
-                    disabled={clampedSpread >= spreads - 1}
-                    aria-label="Next spread"
+                    onClick={() => setCurrentPageView((v) => Math.min(pageViews - 1, v + 1))}
+                    disabled={clampedPageView >= pageViews - 1}
+                    aria-label="Next page"
                   >
                     ›
                   </button>
                 </div>
-              </div>
+              ) : (
+                <div className="binder-builder__title-row">
+                  <div className="binder-builder__title-page binder-builder__title-page--left">
+                    <button
+                      type="button"
+                      className="btn binder-builder__nav-btn"
+                      onClick={() => setCurrentSpread((s) => Math.max(0, s - 1))}
+                      disabled={clampedSpread === 0}
+                      aria-label="Previous spread"
+                    >
+                      ‹
+                    </button>
+                    <BinderPageNameEditor
+                      binderId={binder.id}
+                      page={left}
+                      pages={binder.pages}
+                      onRenamed={handlePageRenamed}
+                    />
+                  </div>
+
+                  <div className="binder-builder__title-spine" aria-hidden="true" />
+
+                  <div className="binder-builder__title-page binder-builder__title-page--right">
+                    <BinderPageNameEditor
+                      binderId={binder.id}
+                      page={right}
+                      pages={binder.pages}
+                      onRenamed={handlePageRenamed}
+                    />
+                    <button
+                      type="button"
+                      className="btn binder-builder__nav-btn"
+                      onClick={() => setCurrentSpread((s) => Math.min(spreads - 1, s + 1))}
+                      disabled={clampedSpread >= spreads - 1}
+                      aria-label="Next spread"
+                    >
+                      ›
+                    </button>
+                  </div>
+                </div>
+              )}
               <BinderSpread
                 binderId={binder.id}
                 binderName={binder.name}
-                leftPage={left}
-                rightPage={right}
+                leftPage={isNarrow ? singlePage : left}
+                rightPage={isNarrow ? null : right}
+                layout={isNarrow ? 'single' : 'spread'}
                 rows={binder.rows}
                 cols={binder.cols}
                 onSlotUpdated={handleSlotUpdated}
@@ -372,7 +486,7 @@ export function BinderBuilderPage() {
                 onBinderRenamed={handleBinderRenamed}
               />
             </div>
-            {isLastSpread && (
+            {showAddPage && (
               <div className="binder-builder__add-page-wrap">
                 <button
                   type="button"
