@@ -10,6 +10,7 @@ import {
 } from 'react'
 import type { User, UserUpdatePayload } from '../api/types'
 import { ensureCsrf, fetchJson, getUrl } from '../utils/api'
+import { parseApiError } from '../utils/apiError'
 
 type AuthModalMode = 'login' | 'register'
 
@@ -35,18 +36,6 @@ function getCsrfToken(): string {
   return match ? decodeURIComponent(match[1]) : ''
 }
 
-function extractApiError(json: unknown, fallback: string): string {
-  if (typeof json !== 'object' || json === null) return fallback
-  const obj = json as Record<string, unknown>
-  if (typeof obj.detail === 'string') return obj.detail
-  const nonField = obj.non_field_errors
-  if (Array.isArray(nonField) && typeof nonField[0] === 'string') return nonField[0]
-  for (const value of Object.values(obj)) {
-    if (Array.isArray(value) && typeof value[0] === 'string') return value[0]
-  }
-  return fallback
-}
-
 async function postAuthJson<T>(route: string, body: unknown): Promise<T> {
   await ensureCsrf()
   const headers = new Headers()
@@ -64,7 +53,7 @@ async function postAuthJson<T>(route: string, body: unknown): Promise<T> {
   const text = await response.text()
   const json = text ? JSON.parse(text) : {}
   if (!response.ok) {
-    throw new Error(extractApiError(json, response.statusText))
+    throw parseApiError(json, response.statusText, response.status)
   }
   return json as T
 }
@@ -126,7 +115,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const text = await response.text()
     const json = text ? JSON.parse(text) : {}
     if (!response.ok) {
-      throw new Error(extractApiError(json, response.statusText))
+      throw parseApiError(json, response.statusText, response.status)
     }
     setUser(json as User)
   }, [])

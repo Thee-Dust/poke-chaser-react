@@ -1,9 +1,18 @@
 import { useEffect, useRef, useState } from 'react'
 import { useAuth } from '../../context/AuthContext'
+import { ApiError } from '../../utils/apiError'
 import { isValidUsername, USERNAME_INVALID_MESSAGE } from '../../utils/username'
 import './AuthModal.css'
 
 type FormView = 'auth' | 'reset-request'
+
+type FieldErrors = {
+  username?: string
+  email?: string
+  identifier?: string
+  password?: string
+  confirmPassword?: string
+}
 
 export function AuthModal() {
   const {
@@ -22,10 +31,35 @@ export function AuthModal() {
   const [confirmPassword, setConfirmPassword] = useState('')
   const [error, setError] = useState<string | null>(null)
   const [resetSuccess, setResetSuccess] = useState<string | null>(null)
-  const [fieldErrors, setFieldErrors] = useState<{ identifier?: boolean; password?: boolean }>({})
+  const [fieldErrors, setFieldErrors] = useState<FieldErrors>({})
   const [submitting, setSubmitting] = useState(false)
 
   const dialogRef = useRef<HTMLDivElement>(null)
+
+  function clearFieldError(key: keyof FieldErrors) {
+    setFieldErrors((prev) => {
+      if (!prev[key]) return prev
+      const next = { ...prev }
+      delete next[key]
+      return next
+    })
+  }
+
+  function applyApiError(err: ApiError) {
+    const next: FieldErrors = {}
+    if (err.fields.username) next.username = err.fields.username
+    if (err.fields.email) next.email = err.fields.email
+    if (err.fields.identifier) next.identifier = err.fields.identifier
+    if (err.fields.password) next.password = err.fields.password
+    setFieldErrors(next)
+
+    const hasFieldMessages = Object.keys(next).length > 0
+    if (err.fields.non_field_errors || !hasFieldMessages) {
+      setError(err.message)
+    } else {
+      setError(null)
+    }
+  }
 
   function resetForm() {
     setFormView('auth')
@@ -50,18 +84,23 @@ export function AuthModal() {
   async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault()
     if (authModalMode === 'register' && !isValidUsername(username)) {
-      setError(USERNAME_INVALID_MESSAGE)
+      setFieldErrors({ username: USERNAME_INVALID_MESSAGE })
+      setError(null)
       return
     }
     if (authModalMode === 'register' && password !== confirmPassword) {
-      setError('Passwords do not match.')
+      setFieldErrors({ confirmPassword: 'Passwords do not match.' })
+      setError(null)
       return
     }
     if (authModalMode === 'login') {
       const identifierMissing = email.trim() === ''
       const passwordMissing = password === ''
       if (identifierMissing || passwordMissing) {
-        setFieldErrors({ identifier: identifierMissing, password: passwordMissing })
+        setFieldErrors({
+          ...(identifierMissing ? { identifier: 'Required' } : {}),
+          ...(passwordMissing ? { password: 'Required' } : {}),
+        })
         setError(null)
         return
       }
@@ -69,6 +108,7 @@ export function AuthModal() {
     }
     setSubmitting(true)
     setError(null)
+    setFieldErrors({})
     try {
       if (authModalMode === 'login') {
         await login(email, password)
@@ -77,7 +117,11 @@ export function AuthModal() {
       }
       closeAuthModal()
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Something went wrong. Please try again.')
+      if (err instanceof ApiError) {
+        applyApiError(err)
+      } else {
+        setError(err instanceof Error ? err.message : 'Something went wrong. Please try again.')
+      }
     } finally {
       setSubmitting(false)
     }
@@ -94,7 +138,11 @@ export function AuthModal() {
       const message = await requestPasswordReset(email.trim())
       setResetSuccess(message)
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Something went wrong. Please try again.')
+      if (err instanceof ApiError) {
+        applyApiError(err)
+      } else {
+        setError(err instanceof Error ? err.message : 'Something went wrong. Please try again.')
+      }
     } finally {
       setSubmitting(false)
     }
@@ -172,12 +220,19 @@ export function AuthModal() {
                 <input
                   type="email"
                   value={email}
-                  onChange={(e) => setEmail(e.target.value)}
+                  onChange={(e) => {
+                    setEmail(e.target.value)
+                    clearFieldError('email')
+                  }}
                   required
                   autoComplete="email"
                   autoFocus
                   disabled={!!resetSuccess}
+                  className={fieldErrors.email ? 'auth-modal__input--error' : undefined}
                 />
+                {fieldErrors.email && (
+                  <span className="auth-modal__field-error">{fieldErrors.email}</span>
+                )}
               </label>
 
               {error && <p className="auth-modal__error">{error}</p>}
@@ -195,6 +250,7 @@ export function AuthModal() {
                 onClick={() => {
                   setFormView('auth')
                   setError(null)
+                  setFieldErrors({})
                   setResetSuccess(null)
                 }}
               >
@@ -210,11 +266,18 @@ export function AuthModal() {
                 <input
                   type="text"
                   value={username}
-                  onChange={(e) => setUsername(e.target.value)}
+                  onChange={(e) => {
+                    setUsername(e.target.value)
+                    clearFieldError('username')
+                  }}
                   required
                   autoComplete="username"
                   autoFocus
+                  className={fieldErrors.username ? 'auth-modal__input--error' : undefined}
                 />
+                {fieldErrors.username && (
+                  <span className="auth-modal__field-error">{fieldErrors.username}</span>
+                )}
               </label>
             )}
 
@@ -225,17 +288,22 @@ export function AuthModal() {
                 value={email}
                 onChange={(e) => {
                   setEmail(e.target.value)
-                  if (fieldErrors.identifier) {
-                    setFieldErrors((prev) => ({ ...prev, identifier: false }))
-                  }
+                  clearFieldError(isLogin ? 'identifier' : 'email')
                 }}
                 required
                 autoComplete={isLogin ? 'username' : 'email'}
                 autoFocus={isLogin}
-                className={isLogin && fieldErrors.identifier ? 'auth-modal__input--error' : undefined}
+                className={
+                  (isLogin ? fieldErrors.identifier : fieldErrors.email)
+                    ? 'auth-modal__input--error'
+                    : undefined
+                }
               />
               {isLogin && fieldErrors.identifier && (
-                <span className="auth-modal__field-error">Required</span>
+                <span className="auth-modal__field-error">{fieldErrors.identifier}</span>
+              )}
+              {!isLogin && fieldErrors.email && (
+                <span className="auth-modal__field-error">{fieldErrors.email}</span>
               )}
             </label>
 
@@ -246,16 +314,14 @@ export function AuthModal() {
                 value={password}
                 onChange={(e) => {
                   setPassword(e.target.value)
-                  if (fieldErrors.password) {
-                    setFieldErrors((prev) => ({ ...prev, password: false }))
-                  }
+                  clearFieldError('password')
                 }}
                 required
                 autoComplete={isLogin ? 'current-password' : 'new-password'}
-                className={isLogin && fieldErrors.password ? 'auth-modal__input--error' : undefined}
+                className={fieldErrors.password ? 'auth-modal__input--error' : undefined}
               />
-              {isLogin && fieldErrors.password && (
-                <span className="auth-modal__field-error">Required</span>
+              {fieldErrors.password && (
+                <span className="auth-modal__field-error">{fieldErrors.password}</span>
               )}
             </label>
 
@@ -266,6 +332,7 @@ export function AuthModal() {
                 onClick={() => {
                   setFormView('reset-request')
                   setError(null)
+                  setFieldErrors({})
                   setResetSuccess(null)
                 }}
               >
@@ -279,10 +346,19 @@ export function AuthModal() {
                 <input
                   type="password"
                   value={confirmPassword}
-                  onChange={(e) => setConfirmPassword(e.target.value)}
+                  onChange={(e) => {
+                    setConfirmPassword(e.target.value)
+                    clearFieldError('confirmPassword')
+                  }}
                   required
                   autoComplete="new-password"
+                  className={
+                    fieldErrors.confirmPassword ? 'auth-modal__input--error' : undefined
+                  }
                 />
+                {fieldErrors.confirmPassword && (
+                  <span className="auth-modal__field-error">{fieldErrors.confirmPassword}</span>
+                )}
               </label>
             )}
 

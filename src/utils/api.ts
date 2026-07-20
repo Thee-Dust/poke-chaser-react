@@ -1,3 +1,5 @@
+import { parseApiError } from './apiError'
+
 export const apiUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000'
 
 export const getUrl = (route: string) => {
@@ -33,7 +35,7 @@ export const fetchJson = async <T = unknown>(
   const body = await response.text()
   const json = body ? JSON.parse(body) : {}
   if (!response.ok) {
-    throw new Error(json.detail ?? response.statusText)
+    throw parseApiError(json, response.statusText, response.status)
   }
   return { status: response.status, headers: response.headers, body, json: json as T }
 }
