@@ -1,8 +1,9 @@
 import { useEffect, useRef, useState } from 'react'
-import { Link, NavLink } from 'react-router-dom'
+import { Link, NavLink, useNavigate } from 'react-router-dom'
 import { useAuth } from '../../context/AuthContext'
 import { useData } from '../../providers/DataProviderContext'
 import { useTheme } from '../../context/ThemeContext'
+import { setPath } from '../../utils/setSlug'
 import './AppHeader.css'
 
 const LOGO_BY_THEME = {
@@ -20,14 +21,20 @@ type HeaderSearchFormProps = {
   onSearchSubmit?: (query: string) => void
 }
 
+type SetSuggestion = { id: string; name: string; series: string }
+
 function HeaderSearchForm({ initialQuery, onSearchSubmit }: HeaderSearchFormProps) {
   const data = useData()
+  const navigate = useNavigate()
   const [query, setQuery] = useState(initialQuery)
-  const [suggestions, setSuggestions] = useState<string[]>([])
+  const [cardSuggestions, setCardSuggestions] = useState<string[]>([])
+  const [setSuggestions, setSetSuggestions] = useState<SetSuggestion[]>([])
   const [open, setOpen] = useState(false)
   const [activeIndex, setActiveIndex] = useState(-1)
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const wrapRef = useRef<HTMLDivElement>(null)
+
+  const totalSuggestions = cardSuggestions.length + setSuggestions.length
 
   useEffect(() => {
     if (!open) return
@@ -46,16 +53,22 @@ function HeaderSearchForm({ initialQuery, onSearchSubmit }: HeaderSearchFormProp
     setActiveIndex(-1)
     if (debounceRef.current) clearTimeout(debounceRef.current)
     if (value.replace(/\s/g, '').length < 3) {
-      setSuggestions([])
+      setCardSuggestions([])
+      setSetSuggestions([])
       setOpen(false)
       return
     }
     debounceRef.current = setTimeout(() => {
-      void data.suggestCards(value).then((results) => {
-        setSuggestions(results)
-        setOpen(results.length > 0)
+      void Promise.all([
+        data.suggestCards(value),
+        data.suggestSets(value),
+      ]).then(([cards, sets]) => {
+        setCardSuggestions(cards)
+        setSetSuggestions(sets)
+        setOpen(cards.length > 0 || sets.length > 0)
       }).catch(() => {
-        setSuggestions([])
+        setCardSuggestions([])
+        setSetSuggestions([])
         setOpen(false)
       })
     }, 300)
@@ -71,7 +84,7 @@ function HeaderSearchForm({ initialQuery, onSearchSubmit }: HeaderSearchFormProp
     if (!open) return
     if (e.key === 'ArrowDown') {
       e.preventDefault()
-      setActiveIndex((i) => Math.min(i + 1, suggestions.length - 1))
+      setActiveIndex((i) => Math.min(i + 1, totalSuggestions - 1))
     } else if (e.key === 'ArrowUp') {
       e.preventDefault()
       setActiveIndex((i) => Math.max(i - 1, -1))
@@ -80,19 +93,25 @@ function HeaderSearchForm({ initialQuery, onSearchSubmit }: HeaderSearchFormProp
       setActiveIndex(-1)
     } else if (e.key === 'Enter' && activeIndex >= 0) {
       e.preventDefault()
-      const name = suggestions[activeIndex]
-      setQuery(name)
-      setOpen(false)
-      setActiveIndex(-1)
-      onSearchSubmit?.(name)
+      if (activeIndex < cardSuggestions.length) {
+        selectCard(cardSuggestions[activeIndex])
+      } else {
+        selectSet(setSuggestions[activeIndex - cardSuggestions.length])
+      }
     }
   }
 
-  function selectSuggestion(name: string) {
+  function selectCard(name: string) {
     setQuery(name)
     setOpen(false)
     setActiveIndex(-1)
     onSearchSubmit?.(name)
+  }
+
+  function selectSet(set: SetSuggestion) {
+    setOpen(false)
+    setActiveIndex(-1)
+    navigate(setPath(set))
   }
 
   return (
@@ -122,27 +141,48 @@ function HeaderSearchForm({ initialQuery, onSearchSubmit }: HeaderSearchFormProp
           </svg>
         </button>
       </form>
-      {open && suggestions.length > 0 && (
+      {open && totalSuggestions > 0 && (
         <ul
           id="app-header-suggest"
           className="app-header__suggest"
           role="listbox"
           aria-label="Search suggestions"
         >
-          {suggestions.map((name, i) => (
-            <li
-              key={name}
-              role="option"
-              aria-selected={i === activeIndex}
-              className={`app-header__suggest-item${i === activeIndex ? ' app-header__suggest-item--active' : ''}`}
-              onMouseDown={(e) => {
-                e.preventDefault()
-                selectSuggestion(name)
-              }}
-            >
-              {name}
-            </li>
-          ))}
+          {cardSuggestions.length > 0 && (
+            <>
+              <li className="app-header__suggest-label" aria-hidden="true">Cards</li>
+              {cardSuggestions.map((name, i) => (
+                <li
+                  key={name}
+                  role="option"
+                  aria-selected={i === activeIndex}
+                  className={`app-header__suggest-item${i === activeIndex ? ' app-header__suggest-item--active' : ''}`}
+                  onMouseDown={(e) => { e.preventDefault(); selectCard(name) }}
+                >
+                  {name}
+                </li>
+              ))}
+            </>
+          )}
+          {setSuggestions.length > 0 && (
+            <>
+              <li className="app-header__suggest-label" aria-hidden="true">Sets</li>
+              {setSuggestions.map((set, i) => {
+                const idx = cardSuggestions.length + i
+                return (
+                  <li
+                    key={set.id}
+                    role="option"
+                    aria-selected={idx === activeIndex}
+                    className={`app-header__suggest-item${idx === activeIndex ? ' app-header__suggest-item--active' : ''}`}
+                    onMouseDown={(e) => { e.preventDefault(); selectSet(set) }}
+                  >
+                    {set.name}
+                  </li>
+                )
+              })}
+            </>
+          )}
         </ul>
       )}
     </div>

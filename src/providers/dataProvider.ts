@@ -66,6 +66,17 @@ async function suggestCards(query: string): Promise<string[]> {
   return json.results ?? []
 }
 
+type SetSuggestion = { id: string; name: string; series: string }
+
+async function suggestSets(query: string): Promise<SetSuggestion[]> {
+  if (query.replace(/\s/g, '').length < 3) return []
+  const params = new URLSearchParams({ q: query.trim(), limit: '5' })
+  const { json } = await fetchJson<{ results: SetSuggestion[] }>(
+    getUrl(`cards/cardSet/suggest/?${params.toString()}`),
+  )
+  return json.results ?? []
+}
+
 async function getCard(cardId: string): Promise<Card | undefined> {
   const { json } = await fetchJson<Card>(getUrl(`cards/card/${cardId}/`))
   return json
@@ -266,6 +277,7 @@ export const dataProvider = {
   getCardsBySet,
   searchCards,
   suggestCards,
+  suggestSets,
   getCard,
   getCollections,
   getCollection,
