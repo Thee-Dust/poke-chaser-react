@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import { Link, NavLink } from 'react-router-dom'
 import { useAuth } from '../../context/AuthContext'
+import { useData } from '../../providers/DataProviderContext'
 import { useTheme } from '../../context/ThemeContext'
 import './AppHeader.css'
 
@@ -20,35 +21,131 @@ type HeaderSearchFormProps = {
 }
 
 function HeaderSearchForm({ initialQuery, onSearchSubmit }: HeaderSearchFormProps) {
+  const data = useData()
   const [query, setQuery] = useState(initialQuery)
+  const [suggestions, setSuggestions] = useState<string[]>([])
+  const [open, setOpen] = useState(false)
+  const [activeIndex, setActiveIndex] = useState(-1)
+  const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const wrapRef = useRef<HTMLDivElement>(null)
+
+  useEffect(() => {
+    if (!open) return
+    function handleOutside(e: MouseEvent) {
+      if (wrapRef.current && !wrapRef.current.contains(e.target as Node)) {
+        setOpen(false)
+      }
+    }
+    document.addEventListener('mousedown', handleOutside)
+    return () => document.removeEventListener('mousedown', handleOutside)
+  }, [open])
+
+  function handleChange(e: React.ChangeEvent<HTMLInputElement>) {
+    const value = e.target.value
+    setQuery(value)
+    setActiveIndex(-1)
+    if (debounceRef.current) clearTimeout(debounceRef.current)
+    if (value.replace(/\s/g, '').length < 3) {
+      setSuggestions([])
+      setOpen(false)
+      return
+    }
+    debounceRef.current = setTimeout(() => {
+      void data.suggestCards(value).then((results) => {
+        setSuggestions(results)
+        setOpen(results.length > 0)
+      }).catch(() => {
+        setSuggestions([])
+        setOpen(false)
+      })
+    }, 300)
+  }
 
   function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault()
+    setOpen(false)
     onSearchSubmit?.(query.trim())
   }
 
+  function handleKeyDown(e: React.KeyboardEvent<HTMLInputElement>) {
+    if (!open) return
+    if (e.key === 'ArrowDown') {
+      e.preventDefault()
+      setActiveIndex((i) => Math.min(i + 1, suggestions.length - 1))
+    } else if (e.key === 'ArrowUp') {
+      e.preventDefault()
+      setActiveIndex((i) => Math.max(i - 1, -1))
+    } else if (e.key === 'Escape') {
+      setOpen(false)
+      setActiveIndex(-1)
+    } else if (e.key === 'Enter' && activeIndex >= 0) {
+      e.preventDefault()
+      const name = suggestions[activeIndex]
+      setQuery(name)
+      setOpen(false)
+      setActiveIndex(-1)
+      onSearchSubmit?.(name)
+    }
+  }
+
+  function selectSuggestion(name: string) {
+    setQuery(name)
+    setOpen(false)
+    setActiveIndex(-1)
+    onSearchSubmit?.(name)
+  }
+
   return (
-    <form className="app-header__search" onSubmit={handleSubmit}>
-      <input
-        type="search"
-        name="search"
-        value={query}
-        onChange={(e) => setQuery(e.target.value)}
-        placeholder="Search cards by name..."
-        aria-label="Search cards"
-      />
-      <button
-        type="submit"
-        className="app-header__search-btn"
-        disabled={!query.trim()}
-        aria-label="Search"
-      >
-        <svg viewBox="0 0 16 16" width="20" height="20" aria-hidden="true" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-          <circle cx="6.5" cy="6.5" r="4" />
-          <path d="M10 10l3.5 3.5" />
-        </svg>
-      </button>
-    </form>
+    <div className="app-header__search-wrap" ref={wrapRef}>
+      <form className="app-header__search" onSubmit={handleSubmit}>
+        <input
+          type="search"
+          name="search"
+          value={query}
+          onChange={handleChange}
+          onKeyDown={handleKeyDown}
+          placeholder="Search cards by name..."
+          aria-label="Search cards"
+          aria-autocomplete="list"
+          aria-expanded={open}
+          aria-controls={open ? 'app-header-suggest' : undefined}
+        />
+        <button
+          type="submit"
+          className="app-header__search-btn"
+          disabled={!query.trim()}
+          aria-label="Search"
+        >
+          <svg viewBox="0 0 16 16" width="20" height="20" aria-hidden="true" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+            <circle cx="6.5" cy="6.5" r="4" />
+            <path d="M10 10l3.5 3.5" />
+          </svg>
+        </button>
+      </form>
+      {open && suggestions.length > 0 && (
+        <ul
+          id="app-header-suggest"
+          className="app-header__suggest"
+          role="listbox"
+          aria-label="Search suggestions"
+        >
+          {suggestions.map((name, i) => (
+            <li
+              key={name}
+              role="option"
+              aria-selected={i === activeIndex}
+              className={`app-header__suggest-item${i === activeIndex ? ' app-header__suggest-item--active' : ''}`}
+              onMouseDown={(e) => {
+                e.preventDefault()
+                selectSuggestion(name)
+              }}
+            >
+              {name}
+            </li>
+          ))}
+        </ul>
+      )}
+    </div>
   )
 }
 
